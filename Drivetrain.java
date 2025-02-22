@@ -7,10 +7,11 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import choreo.trajectory.SwerveSample;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -18,12 +19,12 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.PIDValues;
 import frc.robot.subsystems.gyro.Gyro;
 import org.littletonrobotics.junction.Logger;
 
@@ -36,6 +37,10 @@ public class Drivetrain extends SubsystemBase {
 
     private SwerveDriveKinematics kinematics;
     private SwerveDrivePoseEstimator poseEstimator;
+
+    private PIDController xController = new PIDController(10, 0, 0);
+    private PIDController yController = new PIDController(10, 0, 0);
+    private PIDController headingController = new PIDController(7.5, 0, 0);
 
     private static Drivetrain instance;
 
@@ -53,13 +58,6 @@ public class Drivetrain extends SubsystemBase {
         this.states = new SwerveModuleState[modules.length];
         this.positions = new SwerveModulePosition[modules.length];
 
-        Translation2d[] translations = {
-            DriveConstants.flModuleOffset,
-            DriveConstants.frModuleOffset,
-            DriveConstants.blModuleOffset,
-            DriveConstants.brModuleOffset
-        };
-
         for (int i = 0; i < modules.length; i++) {
             states[i] = modules[i].getState();
             positions[i] = modules[i].getPosition();
@@ -73,7 +71,7 @@ public class Drivetrain extends SubsystemBase {
          *  BR | FR 
          */
 
-        kinematics = new SwerveDriveKinematics(translations);
+        kinematics = new SwerveDriveKinematics(DriveConstants.translations);
 
         poseEstimator = new SwerveDrivePoseEstimator(kinematics, getHeading(), positions, new Pose2d());
 
@@ -84,21 +82,18 @@ public class Drivetrain extends SubsystemBase {
         // Configuring Pathplanner
         AutoBuilder.configure(this::getPose, this::resetPose, this::getSpeeds, this::drive,
             new PPHolonomicDriveController(
-                new PIDConstants(
-                    RobotBase.isReal() ? DriveConstants.kPDriveReal : DriveConstants.kPDriveSim,
-                    RobotBase.isReal() ? DriveConstants.kIDriveReal : DriveConstants.kIDriveSim,
-                    RobotBase.isReal() ? DriveConstants.kDDriveReal : DriveConstants.kDDriveSim),
-                new PIDConstants(
-                    RobotBase.isReal() ? DriveConstants.kPSteerReal : DriveConstants.kPSteerSim,
-                    RobotBase.isReal() ? DriveConstants.kISteerReal : DriveConstants.kISteerSim,
-                    RobotBase.isReal() ? DriveConstants.kDSteerReal : DriveConstants.kDSteerSim)
+                new PIDConstants(PIDValues.kPDrive, PIDValues.kIDrive, PIDValues.kDDrive),
+                new PIDConstants(PIDValues.kPSteer, PIDValues.kISteer, PIDValues.kDSteer)
             ),
             new RobotConfig(
                 DriveConstants.robotMass, DriveConstants.robotMOI,
                 new ModuleConfig(DriveConstants.wheelRadius, DriveConstants.maxLinearVelocity, 1, DCMotor.getKrakenX60(1), DriveConstants.driveCurrentLimit, 2), 
-                translations),
+                DriveConstants.translations),
             () -> (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red)),
             this);
+
+        // Configuring Choreo
+        headingController.enableContinuousInput(-Math.PI, Math.PI);
 
         instance = this;
     }
@@ -184,5 +179,17 @@ public class Drivetrain extends SubsystemBase {
 
         Logger.recordOutput("Drivetrain/DesiredStates", desiredStates);
         Logger.recordOutput("Drivetrain/DesiredSpeeds", speeds);
+    }
+
+    public void followTrajectory(SwerveSample sample) {
+        Pose2d pose = getPose();
+
+        ChassisSpeeds speeds = new ChassisSpeeds(
+            sample.vx + xController.calculate(pose.getX(), sample.x),
+            sample.vy + yController.calculate(pose.getY(), sample.y),
+            sample.omega + headingController.calculate(pose.getRotation().getRadians(), sample.heading)
+        );
+
+        drive(speeds);
     }
 }

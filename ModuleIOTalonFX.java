@@ -21,6 +21,8 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.PIDValues;
+
 import org.littletonrobotics.junction.Logger;
 
 public class ModuleIOTalonFX implements ModuleIO {
@@ -50,9 +52,9 @@ public class ModuleIOTalonFX implements ModuleIO {
         driveConfig.Feedback.FeedbackRotorOffset = encoderOffset;
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        driveConfig.Slot0.kP = DriveConstants.kPDriveReal;
-        driveConfig.Slot0.kI = DriveConstants.kIDriveReal;
-        driveConfig.Slot0.kD = DriveConstants.kDDriveReal;
+        driveConfig.Slot0.kP = PIDValues.kPDrive;
+        driveConfig.Slot0.kI = PIDValues.kIDrive;
+        driveConfig.Slot0.kD = PIDValues.kDDrive;
 
         TalonFXConfiguration steerConfig = new TalonFXConfiguration();
         
@@ -61,9 +63,9 @@ public class ModuleIOTalonFX implements ModuleIO {
         steerConfig.Feedback.FeedbackRotorOffset = encoderOffset;
         steerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         steerConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        steerConfig.Slot0.kP = DriveConstants.kPSteerReal;
-        steerConfig.Slot0.kI = DriveConstants.kISteerReal;
-        steerConfig.Slot0.kD = DriveConstants.kDSteerReal;
+        steerConfig.Slot0.kP = PIDValues.kPSteer;
+        steerConfig.Slot0.kI = PIDValues.kISteer;
+        steerConfig.Slot0.kD = PIDValues.kDSteer;
         steerConfig.ClosedLoopGeneral.ContinuousWrap = true;
 
         driveMotor.getConfigurator().apply(driveConfig);

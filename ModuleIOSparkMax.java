@@ -25,6 +25,8 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.PIDValues;
+
 import org.littletonrobotics.junction.Logger;
 
 public class ModuleIOSparkMax implements ModuleIO {
@@ -53,9 +55,9 @@ public class ModuleIOSparkMax implements ModuleIO {
         steerMotor = new SparkMax((int) DriveConstants.moduleConfigs[moduleId][1], MotorType.kBrushless);
 
         SparkMaxConfig driveConfig = new SparkMaxConfig();
-        driveConfig.closedLoop.p(DriveConstants.kPDriveReal, ClosedLoopSlot.kSlot0);
-        driveConfig.closedLoop.i(DriveConstants.kIDriveReal, ClosedLoopSlot.kSlot0);
-        driveConfig.closedLoop.d(DriveConstants.kDDriveReal, ClosedLoopSlot.kSlot0);
+        driveConfig.closedLoop.p(PIDValues.kPDrive, ClosedLoopSlot.kSlot0);
+        driveConfig.closedLoop.i(PIDValues.kIDrive, ClosedLoopSlot.kSlot0);
+        driveConfig.closedLoop.d(PIDValues.kDDrive, ClosedLoopSlot.kSlot0);
         driveConfig.encoder.positionConversionFactor(DriveConstants.metersPerRotation);
         driveConfig.encoder.velocityConversionFactor(DriveConstants.metersPerRotation / 60);
         driveConfig.inverted(false);
@@ -63,9 +65,9 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveConfig.smartCurrentLimit((int) DriveConstants.driveCurrentLimit.in(Amps));
 
         SparkMaxConfig steerConfig = new SparkMaxConfig();
-        steerConfig.closedLoop.p(DriveConstants.kPSteerReal, ClosedLoopSlot.kSlot0);
-        steerConfig.closedLoop.i(DriveConstants.kISteerReal, ClosedLoopSlot.kSlot0);
-        steerConfig.closedLoop.d(DriveConstants.kDSteerReal, ClosedLoopSlot.kSlot0);
+        steerConfig.closedLoop.p(PIDValues.kPSteer, ClosedLoopSlot.kSlot0);
+        steerConfig.closedLoop.i(PIDValues.kISteer, ClosedLoopSlot.kSlot0);
+        steerConfig.closedLoop.d(PIDValues.kDSteer, ClosedLoopSlot.kSlot0);
         steerConfig.closedLoop.positionWrappingEnabled(false);
         // steerConfig.closedLoop.positionWrappingInputRange(-Math.PI, Math.PI);
         steerConfig.encoder.positionConversionFactor(1.0 / DriveConstants.steerGearRatio);

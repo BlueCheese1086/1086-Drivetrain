@@ -19,6 +19,8 @@ import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.PIDValues;
+
 import org.littletonrobotics.junction.Logger;
 
 public class ModuleIOSim implements ModuleIO {
@@ -38,8 +40,8 @@ public class ModuleIOSim implements ModuleIO {
         driveMotor = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), DriveConstants.driveMOI, DriveConstants.driveGearRatio), DCMotor.getKrakenX60(1));
         steerMotor = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), DriveConstants.steerMOI, DriveConstants.steerGearRatio), DCMotor.getKrakenX60(1));
 
-        driveController = new PIDController(DriveConstants.kPDriveSim, DriveConstants.kIDriveSim, DriveConstants.kDDriveSim);
-        steerController = new PIDController(DriveConstants.kPSteerSim, DriveConstants.kISteerSim, DriveConstants.kDSteerSim);
+        driveController = new PIDController(PIDValues.kPDrive, PIDValues.kIDrive, PIDValues.kDDrive);
+        steerController = new PIDController(PIDValues.kPSteer, PIDValues.kISteer, PIDValues.kDSteer);
         
         steerController.enableContinuousInput(0, Math.PI * 2);
 
