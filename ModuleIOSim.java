@@ -81,7 +81,7 @@ public class ModuleIOSim implements ModuleIO {
         inputs.driveTemperature = getDriveTemperature();
         inputs.steerTemperature = getSteerTemperature();
 
-        Logger.processInputs(String.format("Module%d_Sim", moduleId), inputs);
+        Logger.processInputs(String.format("/Subsystems/Module%d_Sim", moduleId), inputs);
     }
 
     @Override

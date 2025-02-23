@@ -114,7 +114,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         inputs.driveTemperature = getDriveTemperature();
         inputs.steerTemperature = getSteerTemperature();
 
-        Logger.processInputs(String.format("Module%d_SparkMax", moduleId), inputs);
+        Logger.processInputs(String.format("/Subsystems/Module%d_SparkMax", moduleId), inputs);
     }
 
     @Override
