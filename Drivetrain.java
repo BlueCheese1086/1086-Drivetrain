@@ -8,24 +8,34 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import choreo.trajectory.SwerveSample;
+import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.PIDValues;
 import frc.robot.subsystems.gyro.Gyro;
+import java.util.Arrays;
+import java.util.List;
 import org.littletonrobotics.junction.Logger;
 
 public class Drivetrain extends SubsystemBase {
@@ -40,7 +50,10 @@ public class Drivetrain extends SubsystemBase {
 
     private PIDController xController = new PIDController(10, 0, 0);
     private PIDController yController = new PIDController(10, 0, 0);
-    private PIDController headingController = new PIDController(7.5, 0, 0);
+    private ProfiledPIDController headingController = new ProfiledPIDController(7.5, 0, 0, new TrapezoidProfile.Constraints(DriveConstants.maxAngularVelocity.in(RadiansPerSecond), DriveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond)));
+    private HolonomicDriveController controller = new HolonomicDriveController(xController, yController, headingController);
+
+    private TrajectoryConfig trajectoryConfig;
 
     private static Drivetrain instance;
 
@@ -79,6 +92,11 @@ public class Drivetrain extends SubsystemBase {
         new SysIdRoutine(new SysIdRoutine.Config(),
             new SysIdRoutine.Mechanism(this::driveVolts, this::sysIdLog, this, "SwerveDrive"));
 
+        // Initializing the trajectory config
+        trajectoryConfig = new TrajectoryConfig(DriveConstants.maxLinearVelocity, DriveConstants.maxLinearAcceleration);
+        trajectoryConfig.setEndVelocity(MetersPerSecond.zero());
+        trajectoryConfig.setKinematics(kinematics);
+
         // Configuring Pathplanner
         AutoBuilder.configure(this::getPose, this::resetPose, this::getSpeeds, this::drive,
             new PPHolonomicDriveController(
@@ -96,6 +114,45 @@ public class Drivetrain extends SubsystemBase {
         headingController.enableContinuousInput(-Math.PI, Math.PI);
 
         instance = this;
+    }
+
+    public Pose2d getClosestReefPoint() {
+        Pose2d curPose = getPose();
+
+        double[] distances = new double[12];
+
+        distances[0]  = Constants.Poses.REEF_Side1Left.getTranslation().getDistance(curPose.getTranslation());
+        distances[1]  = Constants.Poses.REEF_Side1Right.getTranslation().getDistance(curPose.getTranslation());
+        distances[2]  = Constants.Poses.REEF_Side2Left.getTranslation().getDistance(curPose.getTranslation());
+        distances[3]  = Constants.Poses.REEF_Side2Right.getTranslation().getDistance(curPose.getTranslation());
+        distances[4]  = Constants.Poses.REEF_Side3Left.getTranslation().getDistance(curPose.getTranslation());
+        distances[5]  = Constants.Poses.REEF_Side3Right.getTranslation().getDistance(curPose.getTranslation());
+        distances[6]  = Constants.Poses.REEF_Side4Left.getTranslation().getDistance(curPose.getTranslation());
+        distances[7]  = Constants.Poses.REEF_Side4Right.getTranslation().getDistance(curPose.getTranslation());
+        distances[8]  = Constants.Poses.REEF_Side5Left.getTranslation().getDistance(curPose.getTranslation());
+        distances[9]  = Constants.Poses.REEF_Side5Right.getTranslation().getDistance(curPose.getTranslation());
+        distances[10] = Constants.Poses.REEF_Side6Left.getTranslation().getDistance(curPose.getTranslation());
+        distances[11] = Constants.Poses.REEF_Side6Right.getTranslation().getDistance(curPose.getTranslation());
+
+        int minDistIndex = 0;
+        for (int i = 0; i < 12; i++) {
+            if (distances[i] < distances[minDistIndex]) minDistIndex = i;
+        }
+
+        switch (minDistIndex) {
+            case 0:  return Constants.Poses.REEF_Side1Left;
+            case 1:  return Constants.Poses.REEF_Side1Right;
+            case 2:  return Constants.Poses.REEF_Side2Left;
+            case 3:  return Constants.Poses.REEF_Side2Right;
+            case 4:  return Constants.Poses.REEF_Side3Left;
+            case 5:  return Constants.Poses.REEF_Side3Right;
+            case 6:  return Constants.Poses.REEF_Side4Left;
+            case 7:  return Constants.Poses.REEF_Side4Right;
+            case 8:  return Constants.Poses.REEF_Side5Left;
+            case 9:  return Constants.Poses.REEF_Side5Right;
+            case 10: return Constants.Poses.REEF_Side6Left;
+            default: return Constants.Poses.REEF_Side6Right;
+        }
     }
 
     /**
@@ -141,10 +198,10 @@ public class Drivetrain extends SubsystemBase {
 
         poseEstimator.update(getHeading(), positions);
 
-        Logger.recordOutput("Drivetrain/ActualStates", states);
-        Logger.recordOutput("Drivetrain/ActualPositions", positions);
+        Logger.recordOutput("/Drivetrain/States/Actual", states);
+        Logger.recordOutput("/Drivetrain/Positions/Actual", positions);
 
-        Logger.recordOutput("Drivetrain/EstimatedPose", poseEstimator.getEstimatedPosition());
+        Logger.recordOutput("/Drivetrain/EstimatedPose", poseEstimator.getEstimatedPosition());
     }
 
     public Pose2d getPose() {
@@ -177,20 +234,23 @@ public class Drivetrain extends SubsystemBase {
             modules[i].setState(desiredStates[i]);
         }
 
-        Logger.recordOutput("Drivetrain/DesiredStates", desiredStates);
-        Logger.recordOutput("Drivetrain/DesiredSpeeds", speeds);
+        Logger.recordOutput("/Drivetrain/States/Setpoint", desiredStates);
+        Logger.recordOutput("/Drivetrain/Speeds/Setpoint", speeds);
+    }
+
+    public void pathfindToPose(Pose2d goalPose, Translation2d... translations) {
+        List<Translation2d> translationList = Arrays.asList(translations);
+
+        Trajectory traj = TrajectoryGenerator.generateTrajectory(getPose(), translationList, goalPose, trajectoryConfig);
+
+        traj.getTotalTimeSeconds();
+        Trajectory.State goalState = traj.sample(0.02);
+
+        drive(controller.calculate(getPose(), goalState, goalPose.getRotation()));
     }
 
     public void followTrajectory(SwerveSample sample) {
-        Pose2d pose = getPose();
-
-        ChassisSpeeds speeds = new ChassisSpeeds(
-            sample.vx + xController.calculate(pose.getX(), sample.x),
-            sample.vy + yController.calculate(pose.getY(), sample.y),
-            sample.omega + headingController.calculate(pose.getRotation().getRadians(), sample.heading)
-        );
-
-        drive(speeds);
+        pathfindToPose(sample.getPose());
     }
 
     public void xStates() {
