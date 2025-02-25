@@ -50,12 +50,13 @@ public class SwerveDrive extends Command {
         if ( leftYSpeed < -0.1 &&  leftYSpeed > -0.9)  leftYSpeed += 0.1;
         if (rightXSpeed < -0.1 && rightXSpeed > -0.9) rightXSpeed += 0.1;
 
+        // Getting speeds
         ChassisSpeeds speeds = ChassisSpeeds.fromRobotRelativeSpeeds(
             DriveConstants.maxLinearVelocity.times(-leftYSpeed),
             DriveConstants.maxLinearVelocity.times(-leftXSpeed),
             DriveConstants.maxAngularVelocity.times(-rightXSpeed),
             drivetrain.getHeading());
-            
+        
         // Driving the robot
         drivetrain.drive(speeds);
     }
