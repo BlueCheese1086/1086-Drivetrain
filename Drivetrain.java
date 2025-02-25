@@ -39,8 +39,6 @@ import java.util.List;
 import org.littletonrobotics.junction.Logger;
 
 public class Drivetrain extends SubsystemBase {
-    private Gyro gyro;
-
     private ModuleIO[] modules;
     private SwerveModuleState[] states;
     private SwerveModulePosition[] positions;
@@ -54,6 +52,11 @@ public class Drivetrain extends SubsystemBase {
     private HolonomicDriveController controller = new HolonomicDriveController(xController, yController, headingController);
 
     private TrajectoryConfig trajectoryConfig;
+
+    private Gyro gyro;
+
+    private boolean headingLocked;
+    private Rotation2d lockedAngle;
 
     private static Drivetrain instance;
 
@@ -223,6 +226,11 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public void drive(ChassisSpeeds speeds) {
+        if (headingLocked) {
+            Rotation2d angle = (lockedAngle == null) ? getHeading() : lockedAngle;
+            speeds.omegaRadiansPerSecond = getSpeeds().omegaRadiansPerSecond + headingController.calculate(getHeading().getRadians(), angle.getRadians());
+        }
+
         speeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] desiredStates = kinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, DriveConstants.maxLinearVelocity);
@@ -236,6 +244,20 @@ public class Drivetrain extends SubsystemBase {
 
         Logger.recordOutput("/Drivetrain/States/Setpoint", desiredStates);
         Logger.recordOutput("/Drivetrain/Speeds/Setpoint", speeds);
+    }
+
+    public void setHeadingLock(boolean state) {
+        headingLocked = state;
+    }
+
+    public void setHeadingLock(boolean state, Rotation2d angle) {
+        headingLocked = state;
+
+        setLockedAngle(angle);
+    }
+
+    public void setLockedAngle(Rotation2d angle) {
+        lockedAngle = angle;
     }
 
     public void pathfindToPose(Pose2d goalPose, Translation2d... translations) {
