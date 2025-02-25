@@ -192,4 +192,10 @@ public class Drivetrain extends SubsystemBase {
 
         drive(speeds);
     }
+
+    public void xStates() {
+        for (int i = 0; i < modules.length; i++) {
+            modules[i].setState(DriveConstants.xStates[i]);
+        }
+    }
 }
