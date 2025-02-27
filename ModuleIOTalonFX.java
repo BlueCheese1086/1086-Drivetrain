@@ -22,7 +22,6 @@ import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.PIDValues;
-
 import org.littletonrobotics.junction.Logger;
 
 public class ModuleIOTalonFX implements ModuleIO {
@@ -49,7 +48,6 @@ public class ModuleIOTalonFX implements ModuleIO {
         
         driveConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.driveCurrentLimit.in(Amps);
         driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        driveConfig.Feedback.FeedbackRotorOffset = encoderOffset;
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         driveConfig.Slot0.kP = PIDValues.kPDrive;
@@ -100,7 +98,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         inputs.driveTemperature = getDriveTemperature();
         inputs.steerTemperature = getSteerTemperature();
 
-        Logger.processInputs(String.format("/Subsystems/Module%d_TalonFX", moduleId), inputs);
+        Logger.processInputs(String.format("/RealOutputs/Subsystems/Drivetrain/Module%d_TalonFX", moduleId), inputs);
     }
 
     @Override

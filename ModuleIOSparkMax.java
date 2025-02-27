@@ -26,7 +26,6 @@ import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.PIDValues;
-
 import org.littletonrobotics.junction.Logger;
 
 public class ModuleIOSparkMax implements ModuleIO {
@@ -114,7 +113,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         inputs.driveTemperature = getDriveTemperature();
         inputs.steerTemperature = getSteerTemperature();
 
-        Logger.processInputs(String.format("/Subsystems/Module%d_SparkMax", moduleId), inputs);
+        Logger.processInputs(String.format("/RealOutputs/Subsystems/Drivetrain/Module%d_SparkMax", moduleId), inputs);
     }
 
     @Override
