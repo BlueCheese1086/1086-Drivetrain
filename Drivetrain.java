@@ -194,17 +194,20 @@ public class Drivetrain extends SubsystemBase {
     @Override
     public void periodic() {
         for (int i = 0; i < modules.length; i++) {
+            modules[i].updateInputs();
             states[i] = modules[i].getState();
             positions[i] = modules[i].getPosition();
-            modules[i].updateInputs();
         }
 
         poseEstimator.update(getHeading(), positions);
 
-        Logger.recordOutput("/Drivetrain/States/Actual", states);
-        Logger.recordOutput("/Drivetrain/Positions/Actual", positions);
+        Logger.recordOutput("/Subsystems/Drivetrain/HeadingLocked", headingLocked);
+        Logger.recordOutput("/Subsystems/Drivetrain/HeadingSetpoint", lockedAngle);
 
-        Logger.recordOutput("/Drivetrain/EstimatedPose", poseEstimator.getEstimatedPosition());
+        Logger.recordOutput("/Subsystems/Drivetrain/States/Actual", states);
+        Logger.recordOutput("/Subsystems/Drivetrain/Positions/Actual", positions);
+
+        Logger.recordOutput("/Subsystems/Drivetrain/RobotPose", poseEstimator.getEstimatedPosition());
     }
 
     public Pose2d getPose() {
@@ -242,8 +245,8 @@ public class Drivetrain extends SubsystemBase {
             modules[i].setState(desiredStates[i]);
         }
 
-        Logger.recordOutput("/Drivetrain/States/Setpoint", desiredStates);
-        Logger.recordOutput("/Drivetrain/Speeds/Setpoint", speeds);
+        Logger.recordOutput("/Subsystems/Drivetrain/States/Setpoint", desiredStates);
+        Logger.recordOutput("/Subsystems/Drivetrain/Speeds/Setpoint", speeds);
     }
 
     public void setHeadingLock(boolean state) {
