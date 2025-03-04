@@ -34,6 +34,8 @@ import frc.robot.AdjustableNumbers;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.gyro.Gyro;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.util.VisionResult;
 import java.util.Arrays;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
@@ -54,13 +56,15 @@ public class Drivetrain extends SubsystemBase {
     private TrajectoryConfig trajectoryConfig;
 
     private Gyro gyro;
+    private Vision vision;
 
     private boolean headingLocked;
     private Rotation2d lockedAngle;
 
-    public Drivetrain(Gyro gyro, ModuleIO... modules) {
+    public Drivetrain(Gyro gyro, Vision vision, ModuleIO... modules) {
         // Saving subsystems
         this.gyro = gyro;
+        this.vision = vision;
 
         this.modules = modules;
         this.states = new SwerveModuleState[modules.length];
@@ -190,6 +194,10 @@ public class Drivetrain extends SubsystemBase {
         }
 
         poseEstimator.update(getHeading(), positions);
+
+        for (VisionResult result : vision.getUnreadResults()) {
+            poseEstimator.addVisionMeasurement(result.getPose2d(), result.getTimestamp());
+        }
 
         Logger.recordOutput("/Subsystems/Drivetrain/HeadingLocked", headingLocked);
         Logger.recordOutput("/Subsystems/Drivetrain/HeadingSetpoint", lockedAngle);
