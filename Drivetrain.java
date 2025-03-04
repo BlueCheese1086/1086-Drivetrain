@@ -8,21 +8,15 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import choreo.trajectory.SwerveSample;
-import edu.wpi.first.math.controller.HolonomicDriveController;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -36,8 +30,6 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.gyro.Gyro;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.util.VisionResult;
-import java.util.Arrays;
-import java.util.List;
 import org.littletonrobotics.junction.Logger;
 
 public class Drivetrain extends SubsystemBase {
@@ -48,12 +40,7 @@ public class Drivetrain extends SubsystemBase {
     private SwerveDriveKinematics kinematics;
     private SwerveDrivePoseEstimator poseEstimator;
 
-    private PIDController xController = new PIDController(10, 0, 0);
-    private PIDController yController = new PIDController(10, 0, 0);
     private ProfiledPIDController headingController = new ProfiledPIDController(7.5, 0, 0, new TrapezoidProfile.Constraints(DriveConstants.maxAngularVelocity.in(RadiansPerSecond), DriveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond)));
-    private HolonomicDriveController controller = new HolonomicDriveController(xController, yController, headingController);
-
-    private TrajectoryConfig trajectoryConfig;
 
     private Gyro gyro;
     private Vision vision;
@@ -90,11 +77,6 @@ public class Drivetrain extends SubsystemBase {
         // Configuring SysID
         new SysIdRoutine(new SysIdRoutine.Config(),
             new SysIdRoutine.Mechanism(this::driveVolts, this::sysIdLog, this, "SwerveDrive"));
-
-        // Initializing the trajectory config
-        trajectoryConfig = new TrajectoryConfig(DriveConstants.maxLinearVelocity, DriveConstants.maxLinearAcceleration);
-        trajectoryConfig.setEndVelocity(MetersPerSecond.zero());
-        trajectoryConfig.setKinematics(kinematics);
 
         // Configuring Pathplanner
         AutoBuilder.configure(this::getPose, this::resetPose, this::getSpeeds, this::drive,
@@ -261,19 +243,12 @@ public class Drivetrain extends SubsystemBase {
         lockedAngle = angle;
     }
 
-    public void pathfindToPose(Pose2d goalPose, Translation2d... translations) {
-        List<Translation2d> translationList = Arrays.asList(translations);
-
-        Trajectory traj = TrajectoryGenerator.generateTrajectory(getPose(), translationList, goalPose, trajectoryConfig);
-
-        traj.getTotalTimeSeconds();
-        Trajectory.State goalState = traj.sample(0.02);
-
-        drive(controller.calculate(getPose(), goalState, goalPose.getRotation()));
+    public SwerveDriveKinematics getKinematics() {
+        return kinematics;
     }
 
     public void followTrajectory(SwerveSample sample) {
-        pathfindToPose(sample.getPose());
+        drive(sample.getChassisSpeeds());
     }
 
     public void xStates() {
