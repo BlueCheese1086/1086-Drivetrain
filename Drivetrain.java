@@ -58,18 +58,10 @@ public class Drivetrain extends SubsystemBase {
     private boolean headingLocked;
     private Rotation2d lockedAngle;
 
-    private static Drivetrain instance;
+    public Drivetrain(Gyro gyro, ModuleIO... modules) {
+        // Saving subsystems
+        this.gyro = gyro;
 
-    public static Drivetrain getInstance() {
-        if (instance == null) new Drivetrain(new ModuleIOSim(0), new ModuleIOSim(1), new ModuleIOSim(2), new ModuleIOSim(3));
-
-        return instance;
-    }
-
-    public Drivetrain(ModuleIO... modules) {
-        if (instance != null) return;
-
-        this.gyro = Gyro.getInstance();
         this.modules = modules;
         this.states = new SwerveModuleState[modules.length];
         this.positions = new SwerveModulePosition[modules.length];
@@ -115,8 +107,6 @@ public class Drivetrain extends SubsystemBase {
 
         // Configuring Choreo
         headingController.enableContinuousInput(-Math.PI, Math.PI);
-
-        instance = this;
     }
 
     public Pose2d getClosestReefPoint() {

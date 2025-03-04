@@ -6,8 +6,10 @@ import frc.robot.subsystems.drivetrain.Drivetrain;
 public class XStates extends Command {
     private Drivetrain drivetrain;
 
-    public XStates() {
-        drivetrain = Drivetrain.getInstance();
+    public XStates(Drivetrain drivetrain) {
+        this.drivetrain = drivetrain;
+
+        addRequirements(drivetrain);
     }
 
     @Override

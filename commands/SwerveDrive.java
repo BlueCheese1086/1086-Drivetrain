@@ -13,13 +13,13 @@ public class SwerveDrive extends Command {
     private Supplier<Double> rightXSupplier;
     private Drivetrain drivetrain;
 
-    public SwerveDrive(Supplier<Double> leftXSupplier, Supplier<Double> leftYSupplier, Supplier<Double> rightXSupplier) {
+    public SwerveDrive(Drivetrain drivetrain, Supplier<Double> leftXSupplier, Supplier<Double> leftYSupplier, Supplier<Double> rightXSupplier) {
         this.leftXSupplier = leftXSupplier;
         this.leftYSupplier = leftYSupplier;
         this.rightXSupplier = rightXSupplier;
 
-        drivetrain = Drivetrain.getInstance();
-
+        this.drivetrain = drivetrain;
+        
         addRequirements(drivetrain);
     }
 
