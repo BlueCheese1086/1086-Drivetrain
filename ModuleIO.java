@@ -33,7 +33,7 @@ public interface ModuleIO {
 
         Voltage driveVoltage = Volts.zero();
         Voltage steerVoltage = Volts.zero();
-        
+
         Current driveCurrent = Amps.zero();
         Current steerCurrent = Amps.zero();
 
@@ -58,10 +58,10 @@ public interface ModuleIO {
     public Distance getDistance();
     public LinearVelocity getDriveVelocity();
     public LinearAcceleration getDriveAcceleration();
-    
+
     public Voltage getDriveVoltage();
     public Voltage getSteerVoltage();
-    
+
     public Current getDriveCurrent();
     public Current getSteerCurrent();
 

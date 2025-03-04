@@ -35,7 +35,7 @@ public class ModuleIOTalonFX implements ModuleIO {
     private double encoderOffset;
 
     private ModuleIOInputsAutoLogged inputs;
-    
+
     public ModuleIOTalonFX(int moduleId) {
         this.moduleId = moduleId;
 
@@ -46,7 +46,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         steerMotor = new TalonFX((int) DriveConstants.moduleConfigs[moduleId][1]);
 
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
-        
+
         driveConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.driveCurrentLimit.in(Amps);
         driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -56,7 +56,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         driveConfig.Slot0.kD = AdjustableNumbers.getValue("kDDrive");
 
         TalonFXConfiguration steerConfig = new TalonFXConfiguration();
-        
+
         steerConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.steerCurrentLimit.in(Amps);
         steerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         steerConfig.Feedback.FeedbackRotorOffset = encoderOffset;
@@ -98,7 +98,7 @@ public class ModuleIOTalonFX implements ModuleIO {
 
         inputs.modulePosition = getPosition();
         inputs.moduleState = getState();
-        
+
         inputs.steerAbsAngle = getAbsoluteAngle();
 
         inputs.steerAngle = getAngle();
@@ -108,10 +108,10 @@ public class ModuleIOTalonFX implements ModuleIO {
         inputs.driveDistance = getDistance();
         inputs.driveVelocity = getDriveVelocity();
         inputs.driveAcceleration = getDriveAcceleration();
-        
+
         inputs.driveVoltage = getDriveVoltage();
         inputs.steerVoltage = getSteerVoltage();
-        
+
         inputs.driveCurrent = getDriveCurrent();
         inputs.steerCurrent = getSteerCurrent();
 

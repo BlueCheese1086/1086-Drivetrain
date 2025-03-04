@@ -9,6 +9,10 @@ To use the subsytem in your code, just clone the repository to a "drivetrain" fo
 
 To make it work, define all constants below.
 Directories are not capitalized, classes are.
+
+Classes used:
+frc.robot.AdjustableNumber: A class that allows you to register adjustable numbers (Just pull from https://github.com/BlueCheese1086/Stringray2025)
+
 Constants used:
 frc.robot.Constants.DriveConstants.maxLinearVelocity: The max drive velocity of the robot as a LinearVelocity.
 frc.robot.Constants.DriveConstants.maxLinearAcceleration: The max drive acceleration of the robot as a LinearAcceleration.
@@ -26,12 +30,6 @@ frc.robot.Constants.DriveConstants.translations: An array of Translation2ds that
 frc.robot.Constants.DriveConstants.robotMass: The mass of the robot as a Mass.
 frc.robot.Constants.DriveConstants.moduleConfigs: A 2d array of doubles where each row has the drive motor id, steer motor id, absolute encoder id, and absolute encoder offset.
 frc.robot.Constants.DriveConstants.xStates: An array of SwerveModuleStates that are the desired states to have the robot make an x pattern.
-frc.robot.Constants.PIDValues.kPDrive: The kP component of the drive PID controller as a double.
-frc.robot.Constants.PIDValues.kIDrive: The kI component of the drive PID controller as a double.
-frc.robot.Constants.PIDValues.kDDrive: The kD component of the drive PID controller as a double.
-frc.robot.Constants.PIDValues.kPSteer: The kP component of the steer PID controller as a double.
-frc.robot.Constants.PIDValues.kISteer: The kI component of the steer PID controller as a double.
-frc.robot.Constants.PIDValues.kDSteer: The kD component of the steer PID controller as a double.
 
 (Only for 2025!)
 frc.robot.Constants.Poses.REEF_Side1Left:  The position that the robot should be at to be on the left side of side 1 on the reef.

@@ -111,7 +111,7 @@ public class ModuleIOSparkMax implements ModuleIO {
 
         inputs.modulePosition = getPosition();
         inputs.moduleState = getState();
-        
+
         inputs.steerAbsAngle = getAbsoluteAngle();
 
         inputs.steerAngle = getAngle();
@@ -121,10 +121,10 @@ public class ModuleIOSparkMax implements ModuleIO {
         inputs.driveDistance = getDistance();
         inputs.driveVelocity = getDriveVelocity();
         inputs.driveAcceleration = getDriveAcceleration();
-        
+
         inputs.driveVoltage = getDriveVoltage();
         inputs.steerVoltage = getSteerVoltage();
-        
+
         inputs.driveCurrent = getDriveCurrent();
         inputs.steerCurrent = getSteerCurrent();
 

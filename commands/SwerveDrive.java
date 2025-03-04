@@ -19,7 +19,7 @@ public class SwerveDrive extends Command {
         this.rightXSupplier = rightXSupplier;
 
         this.drivetrain = drivetrain;
-        
+
         addRequirements(drivetrain);
     }
 
@@ -56,7 +56,7 @@ public class SwerveDrive extends Command {
             DriveConstants.maxLinearVelocity.times(-leftXSpeed),
             DriveConstants.maxAngularVelocity.times(-rightXSpeed),
             drivetrain.getHeading());
-        
+
         // Driving the robot
         drivetrain.drive(speeds);
     }

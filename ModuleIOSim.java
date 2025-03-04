@@ -41,7 +41,7 @@ public class ModuleIOSim implements ModuleIO {
 
         driveController = new PIDController(AdjustableNumbers.getValue("kPDrive"), AdjustableNumbers.getValue("kIDrive"), AdjustableNumbers.getValue("kDDrive"));
         steerController = new PIDController(AdjustableNumbers.getValue("kPSteer"), AdjustableNumbers.getValue("kISteer"), AdjustableNumbers.getValue("kDSteer"));
-        
+
         steerController.enableContinuousInput(0, Math.PI * 2);
 
         inputs = new ModuleIOInputsAutoLogged();
@@ -63,7 +63,7 @@ public class ModuleIOSim implements ModuleIO {
 
         inputs.modulePosition = getPosition();
         inputs.moduleState = getState();
-        
+
         inputs.steerAbsAngle = getAbsoluteAngle();
 
         inputs.steerAngle = getAngle();
@@ -73,10 +73,10 @@ public class ModuleIOSim implements ModuleIO {
         inputs.driveDistance = getDistance();
         inputs.driveVelocity = getDriveVelocity();
         inputs.driveAcceleration = getDriveAcceleration();
-        
+
         inputs.driveVoltage = getDriveVoltage();
         inputs.steerVoltage = getSteerVoltage();
-        
+
         inputs.driveCurrent = getDriveCurrent();
         inputs.steerCurrent = getSteerCurrent();
 
