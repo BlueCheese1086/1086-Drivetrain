@@ -2,6 +2,7 @@ package frc.robot.subsystems.drivetrain;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -20,8 +21,8 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.AdjustableNumbers;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.PIDValues;
 import org.littletonrobotics.junction.Logger;
 
 public class ModuleIOTalonFX implements ModuleIO {
@@ -50,9 +51,9 @@ public class ModuleIOTalonFX implements ModuleIO {
         driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        driveConfig.Slot0.kP = PIDValues.kPDrive;
-        driveConfig.Slot0.kI = PIDValues.kIDrive;
-        driveConfig.Slot0.kD = PIDValues.kDDrive;
+        driveConfig.Slot0.kP = AdjustableNumbers.getValue("kPDrive");
+        driveConfig.Slot0.kI = AdjustableNumbers.getValue("kIDrive");
+        driveConfig.Slot0.kD = AdjustableNumbers.getValue("kDDrive");
 
         TalonFXConfiguration steerConfig = new TalonFXConfiguration();
         
@@ -61,9 +62,9 @@ public class ModuleIOTalonFX implements ModuleIO {
         steerConfig.Feedback.FeedbackRotorOffset = encoderOffset;
         steerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         steerConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        steerConfig.Slot0.kP = PIDValues.kPSteer;
-        steerConfig.Slot0.kI = PIDValues.kISteer;
-        steerConfig.Slot0.kD = PIDValues.kDSteer;
+        steerConfig.Slot0.kP = AdjustableNumbers.getValue("kPSteer");
+        steerConfig.Slot0.kI = AdjustableNumbers.getValue("kISteer");
+        steerConfig.Slot0.kD = AdjustableNumbers.getValue("kDSteer");
         steerConfig.ClosedLoopGeneral.ContinuousWrap = true;
 
         driveMotor.getConfigurator().apply(driveConfig);
@@ -76,6 +77,25 @@ public class ModuleIOTalonFX implements ModuleIO {
 
     @Override
     public void updateInputs() {
+        // Updating PID values
+        if (AdjustableNumbers.hasChanged("kPDrive") || AdjustableNumbers.hasChanged("kIDrive") || AdjustableNumbers.hasChanged("kDDrive")) {
+            Slot0Configs pidConfig = new Slot0Configs();
+            pidConfig.kP = AdjustableNumbers.getValue("kPDrive");
+            pidConfig.kI = AdjustableNumbers.getValue("kIDrive");
+            pidConfig.kD = AdjustableNumbers.getValue("kDDrive");
+
+            driveMotor.getConfigurator().refresh(pidConfig);
+        }
+
+        if (AdjustableNumbers.hasChanged("kPSteer") || AdjustableNumbers.hasChanged("kISteer") || AdjustableNumbers.hasChanged("kDSteer")) {
+            Slot0Configs pidConfig = new Slot0Configs();
+            pidConfig.kP = AdjustableNumbers.getValue("kPSteer");
+            pidConfig.kI = AdjustableNumbers.getValue("kISteer");
+            pidConfig.kD = AdjustableNumbers.getValue("kDSteer");
+
+            steerMotor.getConfigurator().refresh(pidConfig);
+        }
+
         inputs.modulePosition = getPosition();
         inputs.moduleState = getState();
         

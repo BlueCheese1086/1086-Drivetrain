@@ -18,8 +18,8 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import frc.robot.AdjustableNumbers;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.PIDValues;
 import org.littletonrobotics.junction.Logger;
 
 public class ModuleIOSim implements ModuleIO {
@@ -39,8 +39,8 @@ public class ModuleIOSim implements ModuleIO {
         driveMotor = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), DriveConstants.driveMOI, DriveConstants.driveGearRatio), DCMotor.getKrakenX60(1));
         steerMotor = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), DriveConstants.steerMOI, DriveConstants.steerGearRatio), DCMotor.getKrakenX60(1));
 
-        driveController = new PIDController(PIDValues.kPDrive, PIDValues.kIDrive, PIDValues.kDDrive);
-        steerController = new PIDController(PIDValues.kPSteer, PIDValues.kISteer, PIDValues.kDSteer);
+        driveController = new PIDController(AdjustableNumbers.getValue("kPDrive"), AdjustableNumbers.getValue("kIDrive"), AdjustableNumbers.getValue("kDDrive"));
+        steerController = new PIDController(AdjustableNumbers.getValue("kPSteer"), AdjustableNumbers.getValue("kISteer"), AdjustableNumbers.getValue("kDSteer"));
         
         steerController.enableContinuousInput(0, Math.PI * 2);
 
@@ -49,6 +49,9 @@ public class ModuleIOSim implements ModuleIO {
 
     @Override
     public void updateInputs() {
+        driveController.setPID(AdjustableNumbers.getValue("kPDrive"), AdjustableNumbers.getValue("kIDrive"), AdjustableNumbers.getValue("kDDrive"));
+        steerController.setPID(AdjustableNumbers.getValue("kPSteer"), AdjustableNumbers.getValue("kISteer"), AdjustableNumbers.getValue("kDSteer"));
+
         double driveVolts = MathUtil.clamp(driveController.calculate(driveMotor.getAngularVelocityRadPerSec() * DriveConstants.wheelRadius.in(Meters)) + driveMotor.getInputVoltage(), -12, 12);
         double steerVolts = MathUtil.clamp(steerController.calculate(getAngle().getRadians()), -12, 12);
 

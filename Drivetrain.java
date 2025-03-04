@@ -30,9 +30,9 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.AdjustableNumbers;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.PIDValues;
 import frc.robot.subsystems.gyro.Gyro;
 import java.util.Arrays;
 import java.util.List;
@@ -103,8 +103,8 @@ public class Drivetrain extends SubsystemBase {
         // Configuring Pathplanner
         AutoBuilder.configure(this::getPose, this::resetPose, this::getSpeeds, this::drive,
             new PPHolonomicDriveController(
-                new PIDConstants(PIDValues.kPDrive, PIDValues.kIDrive, PIDValues.kDDrive),
-                new PIDConstants(PIDValues.kPSteer, PIDValues.kISteer, PIDValues.kDSteer)
+                new PIDConstants(AdjustableNumbers.getValue("kPDrive"), AdjustableNumbers.getValue("kIDrive"), AdjustableNumbers.getValue("kDDrive")),
+                new PIDConstants(AdjustableNumbers.getValue("kPSteer"), AdjustableNumbers.getValue("kISteer"), AdjustableNumbers.getValue("kDSteer"))
             ),
             new RobotConfig(
                 DriveConstants.robotMass, DriveConstants.robotMOI,
