@@ -40,7 +40,7 @@ public class Drivetrain extends SubsystemBase {
     private SwerveDriveKinematics kinematics;
     private SwerveDrivePoseEstimator poseEstimator;
 
-    private ProfiledPIDController headingController = new ProfiledPIDController(7.5, 0, 0, new TrapezoidProfile.Constraints(DriveConstants.maxAngularVelocity.in(RadiansPerSecond), DriveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond)));
+    private ProfiledPIDController headingController = new ProfiledPIDController(5, 0, 0.4, new TrapezoidProfile.Constraints(DriveConstants.maxAngularVelocity.in(RadiansPerSecond), DriveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond)));
 
     private Gyro gyro;
     private Vision vision;
@@ -48,6 +48,13 @@ public class Drivetrain extends SubsystemBase {
     private boolean headingLocked;
     private Rotation2d lockedAngle;
 
+    /**
+     * Creates a new Drivetrain subsystem.
+     * 
+     * @param gyro The gyro instance to get heading from.
+     * @param vision The vision instance to get pose estimates from.
+     * @param modules The module IOs to drive on.
+    */
     public Drivetrain(Gyro gyro, Vision vision, ModuleIO... modules) {
         // Saving subsystems
         this.gyro = gyro;
@@ -95,6 +102,7 @@ public class Drivetrain extends SubsystemBase {
         headingController.enableContinuousInput(-Math.PI, Math.PI);
     }
 
+    /** Gets the point on the reef that is closest to the robot's current pose. */
     public Pose2d getClosestReefPoint() {
         Pose2d curPose = getPose();
 
@@ -145,8 +153,9 @@ public class Drivetrain extends SubsystemBase {
     }
 
     /**
-     * This function 
-     * @param log
+     * This function logs values from sysId.
+     * 
+     * @param log The log structure to apply changes to.
      */
     public void sysIdLog(SysIdRoutineLog log) {
         log.motor("FLDrive")
@@ -154,7 +163,7 @@ public class Drivetrain extends SubsystemBase {
             .linearPosition(Meters.of(modules[0].getPosition().distanceMeters))
             .voltage(modules[0].getDriveVoltage());
 
-        log.motor("FrDrive")
+        log.motor("FRDrive")
             .linearVelocity(MetersPerSecond.of(modules[1].getState().speedMetersPerSecond))
             .linearPosition(Meters.of(modules[1].getPosition().distanceMeters));
 
@@ -167,6 +176,12 @@ public class Drivetrain extends SubsystemBase {
             .linearPosition(Meters.of(modules[3].getPosition().distanceMeters));
     }
 
+    /**
+     * Runs once every tick the subsystem is active.
+     * 
+     * It updates the module IO inputs, the estimated pose, and the module states/positions.
+     * It also logs multiple values specific to the drivetrain subsystem.
+     */
     @Override
     public void periodic() {
         for (int i = 0; i < modules.length; i++) {
@@ -190,24 +205,37 @@ public class Drivetrain extends SubsystemBase {
         Logger.recordOutput("/Subsystems/Drivetrain/RobotPose", poseEstimator.getEstimatedPosition());
     }
 
+    /** Gets the current pose. */
     public Pose2d getPose() {
         return poseEstimator.getEstimatedPosition();
     }
 
+    /**
+     * Resets the pose
+     * 
+     * @param newPose The new pose to go to.
+     */
     public void resetPose(Pose2d newPose) {
         poseEstimator.resetPosition(getHeading(), positions, newPose);
     }
 
+    /** Gets the current heading. */
     public Rotation2d getHeading() {
         if (gyro == null) return new Rotation2d();
 
         return gyro.getHeading();
     }
 
+    /** Gets the current wheel speeds. */
     public ChassisSpeeds getSpeeds() {
         return kinematics.toChassisSpeeds(states);
     }
 
+    /**
+     * Drives the robot according to some ChassisSpeeds.
+     * 
+     * If the heading is locked, omega is ignored.
+     */
     public void drive(ChassisSpeeds speeds) {
         if (headingLocked) {
             Rotation2d angle = (lockedAngle == null) ? getHeading() : lockedAngle;
@@ -229,28 +257,41 @@ public class Drivetrain extends SubsystemBase {
         Logger.recordOutput("/Subsystems/Drivetrain/Speeds/Setpoint", speeds);
     }
 
-    public void setHeadingLock(boolean state) {
-        headingLocked = state;
+    /** Locks the heading */
+    public void lockHeading() {
+        headingLocked = true;
     }
 
-    public void setHeadingLock(boolean state, Rotation2d angle) {
-        headingLocked = state;
+    /** Unlocks the heading. */
+    public void unlockHeading() {
+        headingLocked = false;
+    }
 
+    /**
+     * Locks the heading.
+     * 
+     * @param angle The angle to lock the heading to.
+     */
+    public void setHeadingLock(Rotation2d angle) {
         setLockedAngle(angle);
     }
 
+    /** Sets the angle that the robot will lock to. */
     public void setLockedAngle(Rotation2d angle) {
         lockedAngle = angle;
     }
 
+    /** Gets the kinematics of the robot. */
     public SwerveDriveKinematics getKinematics() {
         return kinematics;
     }
 
+    /** Follows a choreo trajectory. */
     public void followTrajectory(SwerveSample sample) {
         drive(sample.getChassisSpeeds());
     }
 
+    /** Sets the states of each module to an "X" pattern. */
     public void xStates() {
         for (int i = 0; i < modules.length; i++) {
             modules[i].setState(DriveConstants.xStates[i]);
