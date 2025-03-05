@@ -36,6 +36,11 @@ public class ModuleIOTalonFX implements ModuleIO {
 
     private ModuleIOInputsAutoLogged inputs;
 
+    /**
+     * Creates a new ModuleIO with TalonFX motors.
+     * 
+     * @param moduleId The module id used for logging and getting configs.
+     */
     public ModuleIOTalonFX(int moduleId) {
         this.moduleId = moduleId;
 
@@ -54,17 +59,22 @@ public class ModuleIOTalonFX implements ModuleIO {
         driveConfig.Slot0.kP = AdjustableNumbers.getValue("kPDrive");
         driveConfig.Slot0.kI = AdjustableNumbers.getValue("kIDrive");
         driveConfig.Slot0.kD = AdjustableNumbers.getValue("kDDrive");
+        driveConfig.Slot0.kS = DriveConstants.kSDrive;
+        driveConfig.Slot0.kV = DriveConstants.kVDrive;
+        driveConfig.Slot0.kA = DriveConstants.kADrive;
 
         TalonFXConfiguration steerConfig = new TalonFXConfiguration();
 
         steerConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.steerCurrentLimit.in(Amps);
         steerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        steerConfig.Feedback.FeedbackRotorOffset = encoderOffset;
         steerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         steerConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         steerConfig.Slot0.kP = AdjustableNumbers.getValue("kPSteer");
         steerConfig.Slot0.kI = AdjustableNumbers.getValue("kISteer");
         steerConfig.Slot0.kD = AdjustableNumbers.getValue("kDSteer");
+        steerConfig.Slot0.kS = DriveConstants.kSSteer;
+        steerConfig.Slot0.kV = DriveConstants.kVSteer;
+        steerConfig.Slot0.kA = DriveConstants.kASteer;
         steerConfig.ClosedLoopGeneral.ContinuousWrap = true;
 
         driveMotor.getConfigurator().apply(driveConfig);
@@ -145,7 +155,7 @@ public class ModuleIOTalonFX implements ModuleIO {
 
     @Override
     public Rotation2d getAbsoluteAngle() {
-        return new Rotation2d(absEncoder.getAbsolutePosition().getValue()).minus(new Rotation2d(encoderOffset));
+        return new Rotation2d(absEncoder.getAbsolutePosition().getValue()).minus(Rotation2d.fromRotations(encoderOffset));
     }
 
     @Override

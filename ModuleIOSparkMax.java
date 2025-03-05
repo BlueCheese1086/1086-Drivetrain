@@ -13,6 +13,7 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -42,8 +43,16 @@ public class ModuleIOSparkMax implements ModuleIO {
     private CANcoder absEncoder;
     private double encoderOffset;
 
+    private SimpleMotorFeedforward driveFFController;
+    private SimpleMotorFeedforward steerFFController;
+
     private ModuleIOInputsAutoLogged inputs;
 
+    /**
+     * Creates a new ModuleIO with SparkMAX motors.
+     * 
+     * @param moduleId The module id used for logging and getting configs.
+     */
     public ModuleIOSparkMax(int moduleId) {
         this.moduleId = moduleId;
 
@@ -52,6 +61,9 @@ public class ModuleIOSparkMax implements ModuleIO {
 
         driveMotor = new SparkMax((int) DriveConstants.moduleConfigs[moduleId][0], MotorType.kBrushless);
         steerMotor = new SparkMax((int) DriveConstants.moduleConfigs[moduleId][1], MotorType.kBrushless);
+
+        driveFFController = new SimpleMotorFeedforward(DriveConstants.kSDrive, DriveConstants.kVDrive, DriveConstants.kADrive, 0.02);
+        steerFFController = new SimpleMotorFeedforward(DriveConstants.kSSteer, DriveConstants.kVSteer, DriveConstants.kASteer, 0.02);
 
         SparkMaxConfig driveConfig = new SparkMaxConfig();
         driveConfig.closedLoop.p(AdjustableNumbers.getValue("kPDrive"), ClosedLoopSlot.kSlot0);
@@ -136,8 +148,11 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     @Override
     public void setState(SwerveModuleState state) {
-        driveController.setReference(state.speedMetersPerSecond, ControlType.kVelocity, ClosedLoopSlot.kSlot0, 0);
-        steerController.setReference(state.angle.getRotations(), ControlType.kPosition, ClosedLoopSlot.kSlot0, 0);
+        double driveFFVolts = driveFFController.calculate(state.speedMetersPerSecond);
+        double steerFFVolts = steerFFController.calculate((state.angle.getRadians() - getAngle().getRadians()) / 0.02);
+
+        driveController.setReference(state.speedMetersPerSecond, ControlType.kVelocity, ClosedLoopSlot.kSlot0, driveFFVolts);
+        steerController.setReference(state.angle.getRotations(), ControlType.kPosition, ClosedLoopSlot.kSlot0, steerFFVolts);
     }
 
     @Override
@@ -158,7 +173,7 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     @Override
     public Rotation2d getAbsoluteAngle() {
-        return new Rotation2d(absEncoder.getAbsolutePosition().getValue()).minus(new Rotation2d(encoderOffset));
+        return new Rotation2d(absEncoder.getAbsolutePosition().getValue()).minus(Rotation2d.fromRotations(encoderOffset));
     }
 
     @Override

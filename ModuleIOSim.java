@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -31,10 +32,23 @@ public class ModuleIOSim implements ModuleIO {
     private PIDController driveController;
     private PIDController steerController;
 
+    private SimpleMotorFeedforward driveFFController;
+    private SimpleMotorFeedforward steerFFController;
+
+    private SwerveModuleState setpoint;
+
     private ModuleIOInputsAutoLogged inputs;
 
+    /**
+     * Creates a simulated ModuleIO.
+     * 
+     * @param moduleId The module id used for logging and getting configs.
+     */
     public ModuleIOSim(int moduleId) {
         this.moduleId = moduleId;
+
+        driveFFController = new SimpleMotorFeedforward(DriveConstants.kSDrive, DriveConstants.kVDrive, DriveConstants.kADrive);
+        steerFFController = new SimpleMotorFeedforward(DriveConstants.kSSteer, DriveConstants.kVSteer, DriveConstants.kASteer);
 
         driveMotor = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), DriveConstants.driveMOI, DriveConstants.driveGearRatio), DCMotor.getKrakenX60(1));
         steerMotor = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), DriveConstants.steerMOI, DriveConstants.steerGearRatio), DCMotor.getKrakenX60(1));
@@ -52,8 +66,8 @@ public class ModuleIOSim implements ModuleIO {
         driveController.setPID(AdjustableNumbers.getValue("kPDrive"), AdjustableNumbers.getValue("kIDrive"), AdjustableNumbers.getValue("kDDrive"));
         steerController.setPID(AdjustableNumbers.getValue("kPSteer"), AdjustableNumbers.getValue("kISteer"), AdjustableNumbers.getValue("kDSteer"));
 
-        double driveVolts = MathUtil.clamp(driveController.calculate(driveMotor.getAngularVelocityRadPerSec() * DriveConstants.wheelRadius.in(Meters)) + driveMotor.getInputVoltage(), -12, 12);
-        double steerVolts = MathUtil.clamp(steerController.calculate(getAngle().getRadians()), -12, 12);
+        double driveVolts = MathUtil.clamp(driveController.calculate(driveMotor.getAngularVelocityRadPerSec() * DriveConstants.wheelRadius.in(Meters)) + driveMotor.getInputVoltage(), -12, 12) + driveFFController.calculate(setpoint.speedMetersPerSecond);
+        double steerVolts = MathUtil.clamp(steerController.calculate(getAngle().getRadians()), -12, 12) + steerFFController.calculate((setpoint.angle.minus(getAngle()).getRadians()) / 0.02);
 
         driveMotor.setInputVoltage(driveVolts);
         steerMotor.setInputVoltage(steerVolts);
@@ -88,6 +102,8 @@ public class ModuleIOSim implements ModuleIO {
 
     @Override
     public void setState(SwerveModuleState state) {
+        setpoint = state;
+
         driveController.setSetpoint(state.speedMetersPerSecond);
         steerController.setSetpoint(state.angle.getRadians());
     }
