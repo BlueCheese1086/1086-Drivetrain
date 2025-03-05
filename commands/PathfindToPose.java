@@ -25,7 +25,7 @@ public class PathfindToPose extends Command {
 
     private PIDController xController = new PIDController(10, 0, 0);
     private PIDController yController = new PIDController(10, 0, 0);
-    private ProfiledPIDController headingController = new ProfiledPIDController(7.5, 0, 0, new TrapezoidProfile.Constraints(DriveConstants.maxAngularVelocity.in(RadiansPerSecond), DriveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond)));
+    private ProfiledPIDController headingController = new ProfiledPIDController(7, 0, 0, new TrapezoidProfile.Constraints(DriveConstants.maxAngularVelocity.in(RadiansPerSecond), DriveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond)));
     
     private HolonomicDriveController holonomicController = new HolonomicDriveController(xController, yController, headingController);
 
@@ -33,7 +33,7 @@ public class PathfindToPose extends Command {
      * Creates a new PathfindToPose command.
      * It controls the drivetrain and moves it to a certain pose on the field, while also travelling to other poses on the way.
      * 
-     * @param drivetrain The drivetrain subsystem to control
+     * @param drivetrain The drivetrain subsystem to control.
      * @param internalPoses The poses to pathfind to.
      */
     public PathfindToPose(Drivetrain drivetrain, Pose2d... internalPoses) {
@@ -43,7 +43,11 @@ public class PathfindToPose extends Command {
         addRequirements(drivetrain);
     }
 
-    /** Runs once when the command is scheduled.  It generates the trajectory. */
+    /**
+     * Called when the command is initially scheduled.
+     * 
+     * It generates the trajectory for the robot to follow.
+     */
     @Override
     public void initialize() {
         // Recording the time the command starts
@@ -58,7 +62,11 @@ public class PathfindToPose extends Command {
         trajectory = TrajectoryGenerator.generateTrajectory(Arrays.asList(internalPoses), trajectoryConfig);
     }
 
-    /** Runs once every tick the command is active. */
+    /**
+     * Called every time the scheduler runs while the command is scheduled.
+     * 
+     * It gets the state of the trajectory at the current point in time and drives the robot with the output.
+     */
     @Override
     public void execute() {
         // Sampling the state for this current point in time
@@ -68,13 +76,21 @@ public class PathfindToPose extends Command {
         drivetrain.drive(holonomicController.calculate(drivetrain.getPose(), state, state.poseMeters.getRotation()));
     }
 
-    /** Runs once every tick the command is active and returns true when the trajectory has been followed. */
+    /**
+     * Returns true when the command should end.
+     * 
+     * It returns true when the trajectory has finished running.
+     */
     @Override
     public boolean isFinished() {
         return (System.currentTimeMillis() - startTime) / 1000 > trajectory.getTotalTimeSeconds();
     }
 
-    /** Runs once when the command is finished or cancelled.  It stops driving the robot. */
+    /**
+     * Called once the command ends or is interrupted.
+     * 
+     * It sets the speeds of the robot to 0.
+     */
     @Override
     public void end(boolean interrupted) {
         drivetrain.drive(new ChassisSpeeds());
