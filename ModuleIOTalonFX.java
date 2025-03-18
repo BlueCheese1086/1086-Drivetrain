@@ -28,11 +28,12 @@ import org.littletonrobotics.junction.Logger;
 public class ModuleIOTalonFX implements ModuleIO {
     private int moduleId;
 
+    // Hardware
     private TalonFX driveMotor;
     private TalonFX steerMotor;
     private CANcoder absEncoder;
-    private double encoderOffset;
 
+    private double encoderOffset;
     private ModuleIOInputsAutoLogged inputs;
 
     /**
@@ -53,6 +54,7 @@ public class ModuleIOTalonFX implements ModuleIO {
 
         driveConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.driveCurrentLimit.in(Amps);
         driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        driveConfig.Feedback.SensorToMechanismRatio = DriveConstants.driveGearRatio;
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         driveConfig.Slot0.kP = AdjustableValues.getNumber("Drive_kP");
@@ -66,6 +68,7 @@ public class ModuleIOTalonFX implements ModuleIO {
 
         steerConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.steerCurrentLimit.in(Amps);
         steerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        steerConfig.Feedback.SensorToMechanismRatio = DriveConstants.steerGearRatio;
         steerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         steerConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         steerConfig.Slot0.kP = AdjustableValues.getNumber("Steer_kP");
@@ -174,15 +177,19 @@ public class ModuleIOTalonFX implements ModuleIO {
     public AngularAcceleration getSteerAcceleration() {
         return steerMotor.getAcceleration().getValue();
     }
-
+    
     @Override
     public Distance getDistance() {
-        return Meters.of(driveMotor.getPosition().getValueAsDouble() * DriveConstants.metersPerRotation);
+        return Meters.of(driveMotor.getPosition().getValue().in(Radians) * DriveConstants.wheelRadius.in(Meters));
     }
 
     @Override
     public LinearVelocity getDriveVelocity() {
-        return MetersPerSecond.of(driveMotor.getVelocity().getValueAsDouble() * DriveConstants.metersPerRotation);
+        return MetersPerSecond.of(driveMotor.getVelocity().getValue().in(RadiansPerSecond) * DriveConstants.wheelRadius.in(Meters));
+    }
+
+    public void setDriveVelocity(LinearVelocity velocity) {
+        driveMotor.setControl(new VelocityVoltage(RadiansPerSecond.of(velocity.in(MetersPerSecond) / DriveConstants.wheelRadius.in(Meters) / DriveConstants.driveGearRatio)));
     }
 
     @Override

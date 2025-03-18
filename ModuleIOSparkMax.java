@@ -161,7 +161,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     @Override
     public void setState(SwerveModuleState state) {
         double driveFFVolts = driveFFController.calculate(state.speedMetersPerSecond);
-        double steerFFVolts = steerFFController.calculate((state.angle.getRadians() - getAngle().getRadians()) / 0.02);
+        double steerFFVolts = steerFFController.calculate((state.angle.getRotations() - getAngle().getRotations()) / 0.02);
 
         driveController.setReference(state.speedMetersPerSecond, ControlType.kVelocity, ClosedLoopSlot.kSlot0, driveFFVolts);
         steerController.setReference(state.angle.getRotations(), ControlType.kPosition, ClosedLoopSlot.kSlot0, steerFFVolts);

@@ -35,7 +35,7 @@ public class ModuleIOSim implements ModuleIO {
     private SimpleMotorFeedforward driveFFController;
     private SimpleMotorFeedforward steerFFController;
 
-    private SwerveModuleState setpoint;
+    private SwerveModuleState setpoint = new SwerveModuleState();
 
     private ModuleIOInputsAutoLogged inputs;
 
@@ -84,7 +84,7 @@ public class ModuleIOSim implements ModuleIO {
         }
 
         double driveVolts = MathUtil.clamp(driveController.calculate(driveMotor.getAngularVelocityRadPerSec() * DriveConstants.wheelRadius.in(Meters)) + driveMotor.getInputVoltage(), -12, 12) + driveFFController.calculate(setpoint.speedMetersPerSecond);
-        double steerVolts = MathUtil.clamp(steerController.calculate(getAngle().getRadians()), -12, 12) + steerFFController.calculate((setpoint.angle.minus(getAngle()).getRadians()) / 0.02);
+        double steerVolts = MathUtil.clamp(steerController.calculate(getAngle().getRotations()), -12, 12) + steerFFController.calculate((setpoint.angle.minus(getAngle()).getRotations()) / 0.02);
 
         driveMotor.setInputVoltage(driveVolts);
         steerMotor.setInputVoltage(steerVolts);
