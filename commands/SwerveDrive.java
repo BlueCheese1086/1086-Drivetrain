@@ -65,7 +65,7 @@ public class SwerveDrive extends Command {
         if (zSteer < -0.1 && zSteer > -0.9) zSteer += 0.1;
 
         // Getting speeds
-        ChassisSpeeds speeds = ChassisSpeeds.fromRobotRelativeSpeeds(
+        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
             DriveConstants.maxLinearVelocity.times(-ySpeed),
             DriveConstants.maxLinearVelocity.times(-xSpeed),
             DriveConstants.maxAngularVelocity.times(-zSteer),
