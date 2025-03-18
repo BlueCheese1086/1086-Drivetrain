@@ -44,7 +44,7 @@ public class PathfindToPose extends Command {
      */
     @Override
     public void initialize() {
-	holonomicController = drivetrain.getController();
+	    holonomicController = drivetrain.getController();
 
         // Recording the time the command starts
         startTime = System.currentTimeMillis();
@@ -71,7 +71,7 @@ public class PathfindToPose extends Command {
     @Override
     public void execute() {
         // Sampling the state for this current point in time
-        Trajectory.State state = trajectory.sample(System.currentTimeMillis() / 1000.0);
+        Trajectory.State state = trajectory.sample((System.currentTimeMillis() - startTime) / 1000.0);
 
         // Driving the robot based on the holonomic controller output
         drivetrain.drive(holonomicController.calculate(drivetrain.getPose(), state, state.poseMeters.getRotation()));
