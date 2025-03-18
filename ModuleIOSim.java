@@ -19,7 +19,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import frc.robot.AdjustableNumbers;
+import frc.robot.AdjustableValues;
 import frc.robot.Constants.DriveConstants;
 import org.littletonrobotics.junction.Logger;
 
@@ -47,14 +47,14 @@ public class ModuleIOSim implements ModuleIO {
     public ModuleIOSim(int moduleId) {
         this.moduleId = moduleId;
 
-        driveFFController = new SimpleMotorFeedforward(DriveConstants.kSDrive, DriveConstants.kVDrive, DriveConstants.kADrive);
-        steerFFController = new SimpleMotorFeedforward(DriveConstants.kSSteer, DriveConstants.kVSteer, DriveConstants.kASteer);
+        driveFFController = new SimpleMotorFeedforward(AdjustableValues.getNumber("Drive_kS"), AdjustableValues.getNumber("Drive_kV"), AdjustableValues.getNumber("Drive_kA"));
+        steerFFController = new SimpleMotorFeedforward(AdjustableValues.getNumber("Steer_kS"), AdjustableValues.getNumber("Steer_kV"), AdjustableValues.getNumber("Steer_kA"));
 
         driveMotor = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), DriveConstants.driveMOI, DriveConstants.driveGearRatio), DCMotor.getKrakenX60(1));
         steerMotor = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), DriveConstants.steerMOI, DriveConstants.steerGearRatio), DCMotor.getKrakenX60(1));
 
-        driveController = new PIDController(AdjustableNumbers.getValue("kPDrive"), AdjustableNumbers.getValue("kIDrive"), AdjustableNumbers.getValue("kDDrive"));
-        steerController = new PIDController(AdjustableNumbers.getValue("kPSteer"), AdjustableNumbers.getValue("kISteer"), AdjustableNumbers.getValue("kDSteer"));
+        driveController = new PIDController(AdjustableValues.getNumber("Drive_kP"), AdjustableValues.getNumber("Drive_kI"), AdjustableValues.getNumber("Drive_kD"));
+        steerController = new PIDController(AdjustableValues.getNumber("Steer_kP"), AdjustableValues.getNumber("Steer_kI"), AdjustableValues.getNumber("Steer_kD"));
 
         steerController.enableContinuousInput(0, Math.PI * 2);
 
@@ -63,8 +63,25 @@ public class ModuleIOSim implements ModuleIO {
 
     @Override
     public void updateInputs() {
-        driveController.setPID(AdjustableNumbers.getValue("kPDrive"), AdjustableNumbers.getValue("kIDrive"), AdjustableNumbers.getValue("kDDrive"));
-        steerController.setPID(AdjustableNumbers.getValue("kPSteer"), AdjustableNumbers.getValue("kISteer"), AdjustableNumbers.getValue("kDSteer"));
+        if (AdjustableValues.hasChanged("Drive_kP") || AdjustableValues.hasChanged("Drive_kI") || AdjustableValues.hasChanged("Drive_kD")) {
+            driveController.setPID(AdjustableValues.getNumber("Drive_kP"), AdjustableValues.getNumber("Drive_kI"), AdjustableValues.getNumber("Drive_kD"));
+        }
+
+        if (AdjustableValues.hasChanged("Steer_kP") || AdjustableValues.hasChanged("Steer_kI") || AdjustableValues.hasChanged("Steer_kD")) {
+            steerController.setPID(AdjustableValues.getNumber("Steer_kP"), AdjustableValues.getNumber("Steer_kI"), AdjustableValues.getNumber("Steer_kD"));
+        }
+
+        if (AdjustableValues.hasChanged("Drive_kS") || AdjustableValues.hasChanged("Drive_kV") || AdjustableValues.hasChanged("Drive_kA")) {
+            driveFFController.setKs(AdjustableValues.getNumber("Drive_kS"));
+            driveFFController.setKv(AdjustableValues.getNumber("Drive_kV"));
+            driveFFController.setKa(AdjustableValues.getNumber("Drive_kA"));
+        }
+
+        if (AdjustableValues.hasChanged("Steer_kS") || AdjustableValues.hasChanged("Steer_kV") || AdjustableValues.hasChanged("Steer_kA")) {
+            steerFFController.setKs(AdjustableValues.getNumber("Steer_kS"));
+            steerFFController.setKv(AdjustableValues.getNumber("Steer_kV"));
+            steerFFController.setKa(AdjustableValues.getNumber("Steer_kA"));
+        }
 
         double driveVolts = MathUtil.clamp(driveController.calculate(driveMotor.getAngularVelocityRadPerSec() * DriveConstants.wheelRadius.in(Meters)) + driveMotor.getInputVoltage(), -12, 12) + driveFFController.calculate(setpoint.speedMetersPerSecond);
         double steerVolts = MathUtil.clamp(steerController.calculate(getAngle().getRadians()), -12, 12) + steerFFController.calculate((setpoint.angle.minus(getAngle()).getRadians()) / 0.02);

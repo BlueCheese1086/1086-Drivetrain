@@ -25,7 +25,7 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.AdjustableNumbers;
+import frc.robot.AdjustableValues;
 import frc.robot.Constants.DriveConstants;
 import org.littletonrobotics.junction.Logger;
 
@@ -62,13 +62,13 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveMotor = new SparkMax((int) DriveConstants.moduleConfigs[moduleId][0], MotorType.kBrushless);
         steerMotor = new SparkMax((int) DriveConstants.moduleConfigs[moduleId][1], MotorType.kBrushless);
 
-        driveFFController = new SimpleMotorFeedforward(DriveConstants.kSDrive, DriveConstants.kVDrive, DriveConstants.kADrive, 0.02);
-        steerFFController = new SimpleMotorFeedforward(DriveConstants.kSSteer, DriveConstants.kVSteer, DriveConstants.kASteer, 0.02);
+        driveFFController = new SimpleMotorFeedforward(AdjustableValues.getNumber("Drive_kS"), AdjustableValues.getNumber("Drive_kV"), AdjustableValues.getNumber("Drive_kA"), 0.02);
+        steerFFController = new SimpleMotorFeedforward(AdjustableValues.getNumber("Steer_kS"), AdjustableValues.getNumber("Steer_kV"), AdjustableValues.getNumber("Steer_kA"), 0.02);
 
         SparkMaxConfig driveConfig = new SparkMaxConfig();
-        driveConfig.closedLoop.p(AdjustableNumbers.getValue("kPDrive"), ClosedLoopSlot.kSlot0);
-        driveConfig.closedLoop.i(AdjustableNumbers.getValue("kIDrive"), ClosedLoopSlot.kSlot0);
-        driveConfig.closedLoop.d(AdjustableNumbers.getValue("kDDrive"), ClosedLoopSlot.kSlot0);
+        driveConfig.closedLoop.p(AdjustableValues.getNumber("Drive_kP"), ClosedLoopSlot.kSlot0);
+        driveConfig.closedLoop.i(AdjustableValues.getNumber("Drive_kI"), ClosedLoopSlot.kSlot0);
+        driveConfig.closedLoop.d(AdjustableValues.getNumber("Drive_kD"), ClosedLoopSlot.kSlot0);
         driveConfig.encoder.positionConversionFactor(DriveConstants.metersPerRotation);
         driveConfig.encoder.velocityConversionFactor(DriveConstants.metersPerRotation / 60);
         driveConfig.inverted(false);
@@ -76,9 +76,9 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveConfig.smartCurrentLimit((int) DriveConstants.driveCurrentLimit.in(Amps));
 
         SparkMaxConfig steerConfig = new SparkMaxConfig();
-        steerConfig.closedLoop.p(AdjustableNumbers.getValue("kPSteer"), ClosedLoopSlot.kSlot0);
-        steerConfig.closedLoop.i(AdjustableNumbers.getValue("kISteer"), ClosedLoopSlot.kSlot0);
-        steerConfig.closedLoop.d(AdjustableNumbers.getValue("kDSteer"), ClosedLoopSlot.kSlot0);
+        steerConfig.closedLoop.p(AdjustableValues.getNumber("Steer_kP"), ClosedLoopSlot.kSlot0);
+        steerConfig.closedLoop.i(AdjustableValues.getNumber("Steer_kI"), ClosedLoopSlot.kSlot0);
+        steerConfig.closedLoop.d(AdjustableValues.getNumber("Steer_kD"), ClosedLoopSlot.kSlot0);
         steerConfig.closedLoop.positionWrappingEnabled(false);
         // steerConfig.closedLoop.positionWrappingInputRange(-Math.PI, Math.PI);
         steerConfig.encoder.positionConversionFactor(1.0 / DriveConstants.steerGearRatio);
@@ -103,22 +103,34 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     @Override
     public void updateInputs() {
-        if (AdjustableNumbers.hasChanged("kPDrive") || AdjustableNumbers.hasChanged("kIDrive") || AdjustableNumbers.hasChanged("kDDrive")) {
+        if (AdjustableValues.hasChanged("Drive_kP") || AdjustableValues.hasChanged("Drive_kI") || AdjustableValues.hasChanged("Drive_kD")) {
             SparkMaxConfig pidConfig = new SparkMaxConfig();
-            pidConfig.closedLoop.p(AdjustableNumbers.getValue("kPDrive"));
-            pidConfig.closedLoop.i(AdjustableNumbers.getValue("kIDrive"));
-            pidConfig.closedLoop.d(AdjustableNumbers.getValue("kDDrive"));
+            pidConfig.closedLoop.p(AdjustableValues.getNumber("Drive_kP"));
+            pidConfig.closedLoop.i(AdjustableValues.getNumber("Drive_kI"));
+            pidConfig.closedLoop.d(AdjustableValues.getNumber("Drive_kD"));
 
             driveMotor.configure(pidConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         }
 
-        if (AdjustableNumbers.hasChanged("kPSteer") || AdjustableNumbers.hasChanged("kISteer") || AdjustableNumbers.hasChanged("kDSteer")) {
+        if (AdjustableValues.hasChanged("Steer_kP") || AdjustableValues.hasChanged("Steer_kI") || AdjustableValues.hasChanged("Steer_kD")) {
             SparkMaxConfig pidConfig = new SparkMaxConfig();
-            pidConfig.closedLoop.p(AdjustableNumbers.getValue("kPSteer"));
-            pidConfig.closedLoop.i(AdjustableNumbers.getValue("kISteer"));
-            pidConfig.closedLoop.d(AdjustableNumbers.getValue("kDSteer"));
+            pidConfig.closedLoop.p(AdjustableValues.getNumber("Steer_kP"));
+            pidConfig.closedLoop.i(AdjustableValues.getNumber("Steer_kI"));
+            pidConfig.closedLoop.d(AdjustableValues.getNumber("Steer_kD"));
 
             steerMotor.configure(pidConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        }
+
+        if (AdjustableValues.hasChanged("Drive_kS") || AdjustableValues.hasChanged("Drive_kV") || AdjustableValues.hasChanged("Drive_kA")) {
+            driveFFController.setKs(AdjustableValues.getNumber("Drive_kS"));
+            driveFFController.setKv(AdjustableValues.getNumber("Drive_kV"));
+            driveFFController.setKa(AdjustableValues.getNumber("Drive_kA"));
+        }
+
+        if (AdjustableValues.hasChanged("Steer_kS") || AdjustableValues.hasChanged("Steer_kV") || AdjustableValues.hasChanged("Steer_kA")) {
+            steerFFController.setKs(AdjustableValues.getNumber("Steer_kS"));
+            steerFFController.setKv(AdjustableValues.getNumber("Steer_kV"));
+            steerFFController.setKa(AdjustableValues.getNumber("Steer_kA"));
         }
 
         inputs.modulePosition = getPosition();

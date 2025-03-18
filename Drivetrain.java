@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.AdjustableNumbers;
+import frc.robot.AdjustableValues;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.gyro.Gyro;
@@ -41,7 +41,6 @@ public class Drivetrain extends SubsystemBase {
     private SwerveDrivePoseEstimator poseEstimator;
 
     private ProfiledPIDController headingController = new ProfiledPIDController(5, 0, 0.4, new TrapezoidProfile.Constraints(DriveConstants.maxAngularVelocity.in(RadiansPerSecond), DriveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond)));
-
     private Gyro gyro;
     private Vision vision;
 
@@ -88,8 +87,8 @@ public class Drivetrain extends SubsystemBase {
         // Configuring Pathplanner
         AutoBuilder.configure(this::getPose, this::resetPose, this::getSpeeds, this::drive,
             new PPHolonomicDriveController(
-                new PIDConstants(AdjustableNumbers.getValue("kPDrive"), AdjustableNumbers.getValue("kIDrive"), AdjustableNumbers.getValue("kDDrive")),
-                new PIDConstants(AdjustableNumbers.getValue("kPSteer"), AdjustableNumbers.getValue("kISteer"), AdjustableNumbers.getValue("kDSteer"))
+                new PIDConstants(AdjustableValues.getNumber("Drive_kP"), AdjustableValues.getNumber("Drive_kI"), AdjustableValues.getNumber("Drive_kD")),
+                new PIDConstants(AdjustableValues.getNumber("Steer_kP"), AdjustableValues.getNumber("Steer_kI"), AdjustableValues.getNumber("Steer_kD"))
             ),
             new RobotConfig(
                 DriveConstants.robotMass, DriveConstants.robotMOI,
@@ -285,7 +284,7 @@ public class Drivetrain extends SubsystemBase {
     public SwerveDriveKinematics getKinematics() {
         return kinematics;
     }
-
+    
     /** Follows a choreo trajectory. */
     public void followTrajectory(SwerveSample sample) {
         drive(sample.getChassisSpeeds());
