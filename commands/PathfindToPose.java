@@ -3,42 +3,36 @@ package frc.robot.subsystems.drivetrain.commands;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.controller.HolonomicDriveController;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.drivetrain.Drivetrain;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class PathfindToPose extends Command {
     private Drivetrain drivetrain;
-    private Pose2d[] internalPoses;
+    private Pose2d[] poses;
 
     private Trajectory trajectory;
     private double startTime;
 
-    private PIDController xController = new PIDController(10, 0, 0);
-    private PIDController yController = new PIDController(10, 0, 0);
-    private ProfiledPIDController headingController = new ProfiledPIDController(7, 0, 0, new TrapezoidProfile.Constraints(DriveConstants.maxAngularVelocity.in(RadiansPerSecond), DriveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond)));
-    
-    private HolonomicDriveController holonomicController = new HolonomicDriveController(xController, yController, headingController);
+    private HolonomicDriveController holonomicController;
 
     /**
      * Creates a new PathfindToPose command.
      * It controls the drivetrain and moves it to a certain pose on the field, while also travelling to other poses on the way.
      * 
      * @param drivetrain The drivetrain subsystem to control.
-     * @param internalPoses The poses to pathfind to.
+     * @param poses The poses to pathfind to.
      */
-    public PathfindToPose(Drivetrain drivetrain, Pose2d... internalPoses) {
+    public PathfindToPose(Drivetrain drivetrain, Pose2d... poses) {
         this.drivetrain = drivetrain;
-        this.internalPoses = internalPoses;
+        this.poses = poses;
 
         addRequirements(drivetrain);
     }
@@ -50,6 +44,8 @@ public class PathfindToPose extends Command {
      */
     @Override
     public void initialize() {
+	holonomicController = drivetrain.getController();
+
         // Recording the time the command starts
         startTime = System.currentTimeMillis();
 
@@ -59,7 +55,12 @@ public class PathfindToPose extends Command {
         trajectoryConfig.setKinematics(drivetrain.getKinematics());
 
         // Generating the trajectory to follow;
-        trajectory = TrajectoryGenerator.generateTrajectory(Arrays.asList(internalPoses), trajectoryConfig);
+        ArrayList<Pose2d> internalPoses = new ArrayList<Pose2d>();
+
+        internalPoses.add(drivetrain.getPose());
+        internalPoses.addAll(Arrays.asList(poses));
+
+        trajectory = TrajectoryGenerator.generateTrajectory(internalPoses, trajectoryConfig);
     }
 
     /**

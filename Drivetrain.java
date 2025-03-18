@@ -8,15 +8,19 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import choreo.trajectory.SwerveSample;
+import edu.wpi.first.math.controller.HolonomicDriveController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -37,15 +41,34 @@ public class Drivetrain extends SubsystemBase {
     private SwerveModuleState[] states;
     private SwerveModulePosition[] positions;
 
+    private PIDController xController = new PIDController(AdjustableValues.getNumber("XController_kP"),
+                                                          AdjustableValues.getNumber("XController_kI"),
+                                                          AdjustableValues.getNumber("XController_kD"));
+    private PIDController yController = new PIDController(AdjustableValues.getNumber("YController_kP"),
+                                                          AdjustableValues.getNumber("YController_kI"),
+                                                          AdjustableValues.getNumber("YController_kD"));
+    private ProfiledPIDController thetaController =
+            new ProfiledPIDController(
+                    AdjustableValues.getNumber("thetaController_kP"),
+                    AdjustableValues.getNumber("thetaController_kI"),
+                    AdjustableValues.getNumber("thetaController_kD"),
+                    new TrapezoidProfile.Constraints(
+                        DriveConstants.maxAngularVelocity.in(RadiansPerSecond),
+                        DriveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond)));
+
     private SwerveDriveKinematics kinematics;
     private SwerveDrivePoseEstimator poseEstimator;
+    private HolonomicDriveController holonomicController = new HolonomicDriveController(xController, yController, thetaController);
 
-    private ProfiledPIDController headingController = new ProfiledPIDController(5, 0, 0.4, new TrapezoidProfile.Constraints(DriveConstants.maxAngularVelocity.in(RadiansPerSecond), DriveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond)));
+    // Subsystem depencies
     private Gyro gyro;
     private Vision vision;
 
+    // Configs for closed loop control
     private boolean headingLocked;
     private Rotation2d lockedAngle;
+
+    private Rotation2d estimatedHeading = new Rotation2d();
 
     /**
      * Creates a new Drivetrain subsystem.
@@ -55,6 +78,7 @@ public class Drivetrain extends SubsystemBase {
      * @param modules The module IOs to drive on.
     */
     public Drivetrain(Gyro gyro, Vision vision, ModuleIO... modules) {
+        System.out.println("Drivetrain initialized");
         // Saving subsystems
         this.gyro = gyro;
         this.vision = vision;
@@ -98,7 +122,7 @@ public class Drivetrain extends SubsystemBase {
             this);
 
         // Configuring Choreo
-        headingController.enableContinuousInput(-Math.PI, Math.PI);
+        thetaController.enableContinuousInput(-Math.PI, Math.PI);
     }
 
     /** Gets the point on the reef that is closest to the robot's current pose. */
@@ -183,10 +207,24 @@ public class Drivetrain extends SubsystemBase {
      */
     @Override
     public void periodic() {
+        SwerveModulePosition[] oldPositions = positions.clone();
+
         for (int i = 0; i < modules.length; i++) {
             modules[i].updateInputs();
             states[i] = modules[i].getState();
             positions[i] = modules[i].getPosition();
+        }
+
+        if (gyro == null) {
+            SwerveModulePosition[] deltas = new SwerveModulePosition[4];
+
+            for (int i = 0; i < 4; i++) {
+                deltas[i] = new SwerveModulePosition(positions[i].distanceMeters - oldPositions[i].distanceMeters, positions[i].angle);
+            }
+
+            Twist2d twist = kinematics.toTwist2d(deltas);
+
+            estimatedHeading = estimatedHeading.plus(new Rotation2d(twist.dtheta));
         }
 
         poseEstimator.update(getHeading(), positions);
@@ -220,9 +258,9 @@ public class Drivetrain extends SubsystemBase {
 
     /** Gets the current heading. */
     public Rotation2d getHeading() {
-        if (gyro == null) return new Rotation2d();
+        if (gyro == null) return estimatedHeading;
 
-        return gyro.getHeading();
+        return new Rotation2d(gyro.getYaw());
     }
 
     /** Gets the current wheel speeds. */
@@ -238,7 +276,7 @@ public class Drivetrain extends SubsystemBase {
     public void drive(ChassisSpeeds speeds) {
         if (headingLocked) {
             Rotation2d angle = (lockedAngle == null) ? getHeading() : lockedAngle;
-            speeds.omegaRadiansPerSecond = getSpeeds().omegaRadiansPerSecond + headingController.calculate(getHeading().getRadians(), angle.getRadians());
+            speeds.omegaRadiansPerSecond = getSpeeds().omegaRadiansPerSecond + thetaController.calculate(getHeading().getRadians(), angle.getRadians());
         }
 
         speeds = ChassisSpeeds.discretize(speeds, 0.02);
@@ -261,18 +299,29 @@ public class Drivetrain extends SubsystemBase {
         headingLocked = true;
     }
 
+    /**
+     * Locks the heading.
+     * 
+     * @param angle The angle to lock the heading to.
+     */
+    public void lockHeading(Rotation2d angle) {
+        setLockedAngle(angle);
+    }
+
     /** Unlocks the heading. */
     public void unlockHeading() {
         headingLocked = false;
     }
 
     /**
-     * Locks the heading.
+     * Gets the angle that the robot is locked onto.
      * 
-     * @param angle The angle to lock the heading to.
+     * Returns null if the heading is not locked.
      */
-    public void setHeadingLock(Rotation2d angle) {
-        setLockedAngle(angle);
+    public Rotation2d getLockedAngle() {
+        if (headingLocked) return lockedAngle;
+
+        return null;
     }
 
     /** Sets the angle that the robot will lock to. */
@@ -285,9 +334,19 @@ public class Drivetrain extends SubsystemBase {
         return kinematics;
     }
     
+    /** Gets the holonomic controller for the robot. */
+    public HolonomicDriveController getController() {
+        return holonomicController;
+    }
+
     /** Follows a choreo trajectory. */
     public void followTrajectory(SwerveSample sample) {
-        drive(sample.getChassisSpeeds());
+        double velocity = Math.hypot(sample.vx, sample.vy);
+        double acceleration = Math.hypot(sample.ax, sample.ay);
+
+        Trajectory.State state = new Trajectory.State(sample.getTimestamp(), velocity, acceleration, sample.getPose(), acceleration / Math.pow(velocity, 2));
+        
+        drive(holonomicController.calculate(getPose(), state, Rotation2d.fromRadians(sample.heading)));
     }
 
     /** Sets the states of each module to an "X" pattern. */
