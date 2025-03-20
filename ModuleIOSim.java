@@ -79,8 +79,8 @@ public class ModuleIOSim implements ModuleIO {
         if (AdjustableValues.hasChanged("Steer_kV_" + moduleId)) steerFFController.setKv(AdjustableValues.getNumber("Steer_kV_" + moduleId));
         if (AdjustableValues.hasChanged("Steer_kA_" + moduleId)) steerFFController.setKa(AdjustableValues.getNumber("Steer_kA_" + moduleId));
 
-        double driveVolts = MathUtil.clamp(driveController.calculate(getDriveVelocity().in(MetersPerSecond)) + driveMotor.getInputVoltage(), -12, 12) + driveFFController.calculate(setpoint.speedMetersPerSecond);
-        double steerVolts = MathUtil.clamp(steerController.calculate(getAngle().getRadians()), -12, 12) + steerFFController.calculate((setpoint.angle.minus(getAngle()).getRadians()) / 0.02);
+        double driveVolts = MathUtil.clamp(driveController.calculate(getDriveVelocity().in(MetersPerSecond)) + driveMotor.getInputVoltage() + driveFFController.calculate(setpoint.speedMetersPerSecond), -12, 12);
+        double steerVolts = MathUtil.clamp(steerController.calculate(getAngle().getRadians()) + steerFFController.calculate((setpoint.angle.minus(getAngle()).getRadians()) / 0.02), -12, 12);
 
         driveMotor.setInputVoltage(driveVolts);
         steerMotor.setInputVoltage(steerVolts);
@@ -144,17 +144,17 @@ public class ModuleIOSim implements ModuleIO {
 
     @Override
     public Rotation2d getAngle() {
-        return new Rotation2d(steerMotor.getAngularPositionRad() * DriveConstants.steerGearRatio);
+        return new Rotation2d(steerMotor.getAngularPositionRad());
     }
 
     @Override
     public AngularVelocity getSteerVelocity() {
-        return RadiansPerSecond.of(steerMotor.getAngularVelocityRadPerSec() * DriveConstants.steerGearRatio);
+        return RadiansPerSecond.of(steerMotor.getAngularVelocityRadPerSec());
     }
 
     @Override
     public AngularAcceleration getSteerAcceleration() {
-        return RadiansPerSecondPerSecond.of(steerMotor.getAngularAccelerationRadPerSecSq() * DriveConstants.steerGearRatio);
+        return RadiansPerSecondPerSecond.of(steerMotor.getAngularAccelerationRadPerSecSq());
     }
 
     @Override
