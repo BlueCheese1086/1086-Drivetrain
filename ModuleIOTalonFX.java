@@ -57,12 +57,12 @@ public class ModuleIOTalonFX implements ModuleIO {
         driveConfig.Feedback.SensorToMechanismRatio = DriveConstants.driveGearRatio;
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        driveConfig.Slot0.kP = AdjustableValues.getNumber("Drive_kP");
-        driveConfig.Slot0.kI = AdjustableValues.getNumber("Drive_kI");
-        driveConfig.Slot0.kD = AdjustableValues.getNumber("Drive_kD");
-        driveConfig.Slot0.kS = AdjustableValues.getNumber("Drive_kS");
-        driveConfig.Slot0.kV = AdjustableValues.getNumber("Drive_kV");
-        driveConfig.Slot0.kA = AdjustableValues.getNumber("Drive_kA");
+        driveConfig.Slot0.kP = AdjustableValues.getNumber("Drive_kP_" + moduleId);
+        driveConfig.Slot0.kI = AdjustableValues.getNumber("Drive_kI_" + moduleId);
+        driveConfig.Slot0.kD = AdjustableValues.getNumber("Drive_kD_" + moduleId);
+        driveConfig.Slot0.kS = AdjustableValues.getNumber("Drive_kS_" + moduleId);
+        driveConfig.Slot0.kV = AdjustableValues.getNumber("Drive_kV_" + moduleId);
+        driveConfig.Slot0.kA = AdjustableValues.getNumber("Drive_kA_" + moduleId);
 
         TalonFXConfiguration steerConfig = new TalonFXConfiguration();
 
@@ -71,12 +71,12 @@ public class ModuleIOTalonFX implements ModuleIO {
         steerConfig.Feedback.SensorToMechanismRatio = DriveConstants.steerGearRatio;
         steerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         steerConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        steerConfig.Slot0.kP = AdjustableValues.getNumber("Steer_kP");
-        steerConfig.Slot0.kI = AdjustableValues.getNumber("Steer_kI");
-        steerConfig.Slot0.kD = AdjustableValues.getNumber("Steer_kD");
-        steerConfig.Slot0.kS = AdjustableValues.getNumber("Steer_kS");
-        steerConfig.Slot0.kV = AdjustableValues.getNumber("Steer_kV");
-        steerConfig.Slot0.kA = AdjustableValues.getNumber("Steer_kA");
+        steerConfig.Slot0.kP = AdjustableValues.getNumber("Steer_kP_" + moduleId);
+        steerConfig.Slot0.kI = AdjustableValues.getNumber("Steer_kI_" + moduleId);
+        steerConfig.Slot0.kD = AdjustableValues.getNumber("Steer_kD_" + moduleId);
+        steerConfig.Slot0.kS = AdjustableValues.getNumber("Steer_kS_" + moduleId);
+        steerConfig.Slot0.kV = AdjustableValues.getNumber("Steer_kV_" + moduleId);
+        steerConfig.Slot0.kA = AdjustableValues.getNumber("Steer_kA_" + moduleId);
         steerConfig.ClosedLoopGeneral.ContinuousWrap = true;
 
         driveMotor.getConfigurator().apply(driveConfig);
@@ -94,21 +94,21 @@ public class ModuleIOTalonFX implements ModuleIO {
         // What does refresh do vs apply?
         // driveMotor.getConfigurator().refresh(null)
         Slot0Configs drivePIDConfig = new Slot0Configs();
-        if (AdjustableValues.hasChanged("Drive_kP")) drivePIDConfig.kP = AdjustableValues.getNumber("Drive_kP");
-        if (AdjustableValues.hasChanged("Drive_kI")) drivePIDConfig.kI = AdjustableValues.getNumber("Drive_kI");
-        if (AdjustableValues.hasChanged("Drive_kD")) drivePIDConfig.kD = AdjustableValues.getNumber("Drive_kD");
-        if (AdjustableValues.hasChanged("Drive_kS")) drivePIDConfig.kS = AdjustableValues.getNumber("Drive_kS");
-        if (AdjustableValues.hasChanged("Drive_kV")) drivePIDConfig.kV = AdjustableValues.getNumber("Drive_kV");
-        if (AdjustableValues.hasChanged("Drive_kA")) drivePIDConfig.kA = AdjustableValues.getNumber("Drive_kA");
+        if (AdjustableValues.hasChanged("Drive_kP_" + moduleId)) drivePIDConfig.kP = AdjustableValues.getNumber("Drive_kP_" + moduleId);
+        if (AdjustableValues.hasChanged("Drive_kI_" + moduleId)) drivePIDConfig.kI = AdjustableValues.getNumber("Drive_kI_" + moduleId);
+        if (AdjustableValues.hasChanged("Drive_kD_" + moduleId)) drivePIDConfig.kD = AdjustableValues.getNumber("Drive_kD_" + moduleId);
+        if (AdjustableValues.hasChanged("Drive_kS_" + moduleId)) drivePIDConfig.kS = AdjustableValues.getNumber("Drive_kS_" + moduleId);
+        if (AdjustableValues.hasChanged("Drive_kV_" + moduleId)) drivePIDConfig.kV = AdjustableValues.getNumber("Drive_kV_" + moduleId);
+        if (AdjustableValues.hasChanged("Drive_kA_" + moduleId)) drivePIDConfig.kA = AdjustableValues.getNumber("Drive_kA_" + moduleId);
         if (!drivePIDConfig.equals(new Slot0Configs())) driveMotor.getConfigurator().refresh(drivePIDConfig);
 
         Slot0Configs steerPIDConfig = new Slot0Configs();
-        if (AdjustableValues.hasChanged("Steer_kP")) steerPIDConfig.kP = AdjustableValues.getNumber("Steer_kP");
-        if (AdjustableValues.hasChanged("Steer_kI")) steerPIDConfig.kI = AdjustableValues.getNumber("Steer_kI");
-        if (AdjustableValues.hasChanged("Steer_kD")) steerPIDConfig.kD = AdjustableValues.getNumber("Steer_kD");
-        if (AdjustableValues.hasChanged("Steer_kS")) steerPIDConfig.kS = AdjustableValues.getNumber("Steer_kS");
-        if (AdjustableValues.hasChanged("Steer_kV")) steerPIDConfig.kV = AdjustableValues.getNumber("Steer_kV");
-        if (AdjustableValues.hasChanged("Steer_kA")) steerPIDConfig.kA = AdjustableValues.getNumber("Steer_kA");
+        if (AdjustableValues.hasChanged("Steer_kP_" + moduleId)) steerPIDConfig.kP = AdjustableValues.getNumber("Steer_kP_" + moduleId);
+        if (AdjustableValues.hasChanged("Steer_kI_" + moduleId)) steerPIDConfig.kI = AdjustableValues.getNumber("Steer_kI_" + moduleId);
+        if (AdjustableValues.hasChanged("Steer_kD_" + moduleId)) steerPIDConfig.kD = AdjustableValues.getNumber("Steer_kD_" + moduleId);
+        if (AdjustableValues.hasChanged("Steer_kS_" + moduleId)) steerPIDConfig.kS = AdjustableValues.getNumber("Steer_kS_" + moduleId);
+        if (AdjustableValues.hasChanged("Steer_kV_" + moduleId)) steerPIDConfig.kV = AdjustableValues.getNumber("Steer_kV_" + moduleId);
+        if (AdjustableValues.hasChanged("Steer_kA_" + moduleId)) steerPIDConfig.kA = AdjustableValues.getNumber("Steer_kA_" + moduleId);
         if (!steerPIDConfig.equals(new Slot0Configs())) steerMotor.getConfigurator().refresh(steerPIDConfig);
 
         inputs.modulePosition = getPosition();
