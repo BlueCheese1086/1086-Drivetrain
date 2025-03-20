@@ -56,7 +56,7 @@ public class ModuleIOSim implements ModuleIO {
         driveController = new PIDController(AdjustableValues.getNumber("Drive_kP_" + moduleId), AdjustableValues.getNumber("Drive_kI_" + moduleId), AdjustableValues.getNumber("Drive_kD_" + moduleId));
         steerController = new PIDController(AdjustableValues.getNumber("Steer_kP_" + moduleId), AdjustableValues.getNumber("Steer_kI_" + moduleId), AdjustableValues.getNumber("Steer_kD_" + moduleId));
 
-        steerController.enableContinuousInput(0, Math.PI * 2);
+        steerController.enableContinuousInput(Math.PI, -Math.PI);
 
         inputs = new ModuleIOInputsAutoLogged();
     }
