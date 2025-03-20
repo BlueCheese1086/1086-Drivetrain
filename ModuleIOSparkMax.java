@@ -69,8 +69,8 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveConfig.closedLoop.p(AdjustableValues.getNumber("Drive_kP_" + moduleId), ClosedLoopSlot.kSlot0);
         driveConfig.closedLoop.i(AdjustableValues.getNumber("Drive_kI_" + moduleId), ClosedLoopSlot.kSlot0);
         driveConfig.closedLoop.d(AdjustableValues.getNumber("Drive_kD_" + moduleId), ClosedLoopSlot.kSlot0);
-        driveConfig.encoder.positionConversionFactor(DriveConstants.metersPerRotation);
-        driveConfig.encoder.velocityConversionFactor(DriveConstants.metersPerRotation / 60);
+        driveConfig.encoder.positionConversionFactor(DriveConstants.wheelRadius.in(Meters) / DriveConstants.driveGearRatio);
+        driveConfig.encoder.velocityConversionFactor(DriveConstants.wheelRadius.in(Meters) / DriveConstants.driveGearRatio / 60);
         driveConfig.inverted(false);
         driveConfig.idleMode(IdleMode.kCoast);
         driveConfig.smartCurrentLimit((int) DriveConstants.driveCurrentLimit.in(Amps));

@@ -138,14 +138,14 @@ public class ModuleIOTalonFX implements ModuleIO {
 
     @Override
     public void setState(SwerveModuleState state) {
-        driveMotor.setControl(new VelocityVoltage(state.speedMetersPerSecond / DriveConstants.metersPerRotation));
+        driveMotor.setControl(new VelocityVoltage(RadiansPerSecond.of(state.speedMetersPerSecond / DriveConstants.wheelRadius.in(Meters))));
         steerMotor.setControl(new PositionVoltage(state.angle.getMeasure()));
     }
 
     @Override
     public void resetPosition(SwerveModulePosition position) {
         steerMotor.setPosition(position.angle.getMeasure());
-        driveMotor.setPosition(position.distanceMeters / DriveConstants.metersPerRotation);
+        driveMotor.setPosition(Radians.of(position.distanceMeters / DriveConstants.wheelRadius.in(Meters)));
     }
 
     @Override
@@ -164,6 +164,21 @@ public class ModuleIOTalonFX implements ModuleIO {
     }
 
     @Override
+    public Distance getDistance() {
+        return Meters.of(driveMotor.getPosition().getValue().in(Radians) * DriveConstants.wheelRadius.in(Meters));
+    }
+
+    @Override
+    public LinearVelocity getDriveVelocity() {
+        return MetersPerSecond.of(driveMotor.getVelocity().getValue().in(RadiansPerSecond) * DriveConstants.wheelRadius.in(Meters));
+    }
+
+    @Override
+    public LinearAcceleration getDriveAcceleration() {
+        return MetersPerSecondPerSecond.of(driveMotor.getAcceleration().getValue().in(RadiansPerSecondPerSecond) * DriveConstants.wheelRadius.in(Meters));
+    }
+
+    @Override
     public Rotation2d getAngle() {
         return new Rotation2d(steerMotor.getPosition().getValue());
     }
@@ -176,25 +191,6 @@ public class ModuleIOTalonFX implements ModuleIO {
     @Override
     public AngularAcceleration getSteerAcceleration() {
         return steerMotor.getAcceleration().getValue();
-    }
-    
-    @Override
-    public Distance getDistance() {
-        return Meters.of(driveMotor.getPosition().getValue().in(Radians) * DriveConstants.wheelRadius.in(Meters));
-    }
-
-    @Override
-    public LinearVelocity getDriveVelocity() {
-        return MetersPerSecond.of(driveMotor.getVelocity().getValue().in(RadiansPerSecond) * DriveConstants.wheelRadius.in(Meters));
-    }
-
-    public void setDriveVelocity(LinearVelocity velocity) {
-        driveMotor.setControl(new VelocityVoltage(RadiansPerSecond.of(velocity.in(MetersPerSecond) / DriveConstants.wheelRadius.in(Meters) / DriveConstants.driveGearRatio)));
-    }
-
-    @Override
-    public LinearAcceleration getDriveAcceleration() {
-        return MetersPerSecondPerSecond.of(driveMotor.getAcceleration().getValueAsDouble() * DriveConstants.metersPerRotation);
     }
 
     @Override
