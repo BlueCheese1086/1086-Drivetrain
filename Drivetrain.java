@@ -41,20 +41,20 @@ public class Drivetrain extends SubsystemBase {
     private SwerveModuleState[] states;
     private SwerveModulePosition[] positions;
 
-    private PIDController xController = new PIDController(AdjustableValues.getNumber("XController_kP"),
-                                                          AdjustableValues.getNumber("XController_kI"),
-                                                          AdjustableValues.getNumber("XController_kD"));
-    private PIDController yController = new PIDController(AdjustableValues.getNumber("YController_kP"),
-                                                          AdjustableValues.getNumber("YController_kI"),
-                                                          AdjustableValues.getNumber("YController_kD"));
-    private ProfiledPIDController thetaController =
-            new ProfiledPIDController(
-                    AdjustableValues.getNumber("thetaController_kP"),
-                    AdjustableValues.getNumber("thetaController_kI"),
-                    AdjustableValues.getNumber("thetaController_kD"),
-                    new TrapezoidProfile.Constraints(
-                        DriveConstants.maxAngularVelocity.in(RadiansPerSecond),
-                        DriveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond)));
+    private PIDController xController = new PIDController(AdjustableValues.getNumber("X_kP"),
+                                                          AdjustableValues.getNumber("X_kI"),
+                                                          AdjustableValues.getNumber("X_kD"));
+
+    private PIDController yController = new PIDController(AdjustableValues.getNumber("Y_kP"),
+                                                          AdjustableValues.getNumber("Y_kI"),
+                                                          AdjustableValues.getNumber("Y_kD"));
+
+    private ProfiledPIDController thetaController = new ProfiledPIDController(AdjustableValues.getNumber("Theta_kP"),
+                                                                              AdjustableValues.getNumber("Theta_kI"),
+                                                                              AdjustableValues.getNumber("Theta_kD"),
+                                                                              new TrapezoidProfile.Constraints(
+                                                                                  DriveConstants.maxAngularVelocity.in(RadiansPerSecond),
+                                                                                  DriveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond)));
 
     private SwerveDriveKinematics kinematics;
     private SwerveDrivePoseEstimator poseEstimator;
@@ -207,6 +207,18 @@ public class Drivetrain extends SubsystemBase {
      */
     @Override
     public void periodic() {
+        if (AdjustableValues.hasChanged("X_kP")) xController.setP(AdjustableValues.getNumber("X_kP"));
+        if (AdjustableValues.hasChanged("X_kI")) xController.setI(AdjustableValues.getNumber("X_kI"));
+        if (AdjustableValues.hasChanged("X_kD")) xController.setD(AdjustableValues.getNumber("X_kD"));
+
+        if (AdjustableValues.hasChanged("Y_kP")) yController.setP(AdjustableValues.getNumber("Y_kP"));
+        if (AdjustableValues.hasChanged("Y_kI")) yController.setI(AdjustableValues.getNumber("Y_kI"));
+        if (AdjustableValues.hasChanged("Y_kD")) yController.setD(AdjustableValues.getNumber("Y_kD"));
+
+        if (AdjustableValues.hasChanged("Theta_kP")) thetaController.setP(AdjustableValues.getNumber("Theta_kP"));
+        if (AdjustableValues.hasChanged("Theta_kI")) thetaController.setI(AdjustableValues.getNumber("Theta_kI"));
+        if (AdjustableValues.hasChanged("Theta_kD")) thetaController.setD(AdjustableValues.getNumber("Theta_kD"));
+
         SwerveModulePosition[] oldPositions = positions.clone();
 
         for (int i = 0; i < modules.length; i++) {
