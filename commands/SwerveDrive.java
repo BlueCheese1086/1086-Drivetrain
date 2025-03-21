@@ -11,6 +11,7 @@ public class SwerveDrive extends Command {
     private Supplier<Double> xSpeedSupplier;
     private Supplier<Double> ySpeedSupplier;
     private Supplier<Double> zSteerSupplier;
+    private boolean fieldRelative = true;
     private Drivetrain drivetrain;
 
     /**
@@ -34,6 +35,10 @@ public class SwerveDrive extends Command {
     /** Called when the command is initially scheduled. */
     @Override
     public void initialize() {}
+
+    public void toggleFieldRelative() {
+        this.fieldRelative = !fieldRelative;
+    }
 
     /**
      * Called every time the scheduler runs while the command is scheduled.
@@ -65,11 +70,20 @@ public class SwerveDrive extends Command {
         if (zSteer < -0.1 && zSteer > -0.9) zSteer += 0.1;
 
         // Getting speeds
-        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-            DriveConstants.maxLinearVelocity.times(-ySpeed),
-            DriveConstants.maxLinearVelocity.times(-xSpeed),
-            DriveConstants.maxAngularVelocity.times(-zSteer),
-            drivetrain.getHeading());
+        ChassisSpeeds speeds;
+        
+        if (fieldRelative) {
+            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                DriveConstants.maxLinearVelocity.times(-ySpeed),
+                DriveConstants.maxLinearVelocity.times(-xSpeed),
+                DriveConstants.maxAngularVelocity.times(-zSteer),
+                drivetrain.getHeading());
+        } else {
+            speeds = new ChassisSpeeds(
+                DriveConstants.maxLinearVelocity.times(-ySpeed),
+                DriveConstants.maxLinearVelocity.times(-xSpeed),
+                DriveConstants.maxAngularVelocity.times(-zSteer));
+        }
 
         // Driving the robot
         drivetrain.drive(speeds);
