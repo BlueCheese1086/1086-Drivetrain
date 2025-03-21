@@ -59,7 +59,7 @@ public class PathfindToPose extends Command {
         // Setting the tolerance of the holonomic controller
         // For some reason this is a pose2d?
         // Basically if the error is within these bounds, the controller says it is done with that part of the path.
-        holonomicController.setTolerance(new Pose2d(0.1, 0.1, new Rotation2d(0.05)));
+        holonomicController.setTolerance(new Pose2d(0.1, 0.1, new Rotation2d(0.02)));
 
         // Initializing the trajectory config
         TrajectoryConfig trajectoryConfig = new TrajectoryConfig(DriveConstants.maxLinearVelocity, DriveConstants.maxLinearAcceleration);
