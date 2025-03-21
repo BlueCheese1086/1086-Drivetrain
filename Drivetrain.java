@@ -111,12 +111,12 @@ public class Drivetrain extends SubsystemBase {
         // Configuring Pathplanner
         AutoBuilder.configure(this::getPose, this::resetPose, this::getSpeeds, this::drive,
             new PPHolonomicDriveController(
-                new PIDConstants(AdjustableValues.getNumber("Drive_kP"), AdjustableValues.getNumber("Drive_kI"), AdjustableValues.getNumber("Drive_kD")),
-                new PIDConstants(AdjustableValues.getNumber("Steer_kP"), AdjustableValues.getNumber("Steer_kI"), AdjustableValues.getNumber("Steer_kD"))
+                new PIDConstants(DriveConstants.kPDriveDefault, DriveConstants.kIDriveDefault, DriveConstants.kDDriveDefault),
+                new PIDConstants(DriveConstants.kPSteerDefault, DriveConstants.kISteerDefault, DriveConstants.kDSteerDefault)
             ),
             new RobotConfig(
                 DriveConstants.robotMass, DriveConstants.robotMOI,
-                new ModuleConfig(DriveConstants.wheelRadius, DriveConstants.maxLinearVelocity, 1, DCMotor.getKrakenX60(1), DriveConstants.driveCurrentLimit, 2), 
+                new ModuleConfig(DriveConstants.wheelRadius, DriveConstants.maxLinearVelocity, 1, DCMotor.getKrakenX60(1).withReduction(DriveConstants.driveGearRatio), DriveConstants.driveCurrentLimit, 2), 
                 DriveConstants.translations),
             () -> (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red)),
             this);
