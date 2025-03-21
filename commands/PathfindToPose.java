@@ -41,6 +41,10 @@ public class PathfindToPose extends Command {
         addRequirements(drivetrain);
     }
 
+    public void setGoalPose(Pose2d goalPose) {
+        this.endPose = goalPose;
+    }
+
     /**
      * Called when the command is initially scheduled.
      * 
