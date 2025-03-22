@@ -288,7 +288,7 @@ public class Drivetrain extends SubsystemBase {
     public void drive(ChassisSpeeds speeds) {
         if (headingLocked) {
             Rotation2d angle = (lockedAngle == null) ? getHeading() : lockedAngle;
-            speeds.omegaRadiansPerSecond = getSpeeds().omegaRadiansPerSecond + thetaController.calculate(getHeading().getRadians(), angle.getRadians());
+            speeds.omegaRadiansPerSecond = thetaController.calculate(getHeading().getRadians(), angle.getRadians());
         }
 
         speeds = ChassisSpeeds.discretize(speeds, 0.02);
@@ -307,8 +307,8 @@ public class Drivetrain extends SubsystemBase {
     }
 
     /** Locks the heading */
-    public void lockHeading() {
-        headingLocked = true;
+    public void setHeadingLock(boolean lock) {
+        headingLocked = lock;
     }
 
     /**
@@ -316,13 +316,14 @@ public class Drivetrain extends SubsystemBase {
      * 
      * @param angle The angle to lock the heading to.
      */
-    public void lockHeading(Rotation2d angle) {
+    public void setHeadingLock(boolean lock, Rotation2d angle) {
+        headingLocked = lock;
+
         setLockedAngle(angle);
     }
 
-    /** Unlocks the heading. */
-    public void unlockHeading() {
-        headingLocked = false;
+    public boolean isLocked() {
+        return headingLocked;
     }
 
     /**
@@ -331,9 +332,7 @@ public class Drivetrain extends SubsystemBase {
      * Returns null if the heading is not locked.
      */
     public Rotation2d getLockedAngle() {
-        if (headingLocked) return lockedAngle;
-
-        return null;
+        return lockedAngle;
     }
 
     /** Sets the angle that the robot will lock to. */
