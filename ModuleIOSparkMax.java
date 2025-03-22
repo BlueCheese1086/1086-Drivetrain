@@ -79,8 +79,8 @@ public class ModuleIOSparkMax implements ModuleIO {
         steerConfig.closedLoop.p(AdjustableValues.getNumber("Steer_kP_" + moduleId), ClosedLoopSlot.kSlot0);
         steerConfig.closedLoop.i(AdjustableValues.getNumber("Steer_kI_" + moduleId), ClosedLoopSlot.kSlot0);
         steerConfig.closedLoop.d(AdjustableValues.getNumber("Steer_kD_" + moduleId), ClosedLoopSlot.kSlot0);
-        steerConfig.closedLoop.positionWrappingEnabled(false);
-        // steerConfig.closedLoop.positionWrappingInputRange(-Math.PI, Math.PI);
+        steerConfig.closedLoop.positionWrappingEnabled(true);
+        steerConfig.closedLoop.positionWrappingInputRange(-Math.PI, Math.PI);
         steerConfig.encoder.positionConversionFactor(1.0 / DriveConstants.steerGearRatio);
         steerConfig.encoder.velocityConversionFactor(1.0 / DriveConstants.steerGearRatio);
         steerConfig.inverted(false);
