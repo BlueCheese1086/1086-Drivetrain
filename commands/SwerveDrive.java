@@ -11,6 +11,7 @@ public class SwerveDrive extends Command {
     private Supplier<Double> xSpeedSupplier;
     private Supplier<Double> ySpeedSupplier;
     private Supplier<Double> zSteerSupplier;
+    private Supplier<Boolean> fieldRelativeToggleSupplier;
     private boolean fieldRelative = true;
     private Drivetrain drivetrain;
 
@@ -23,11 +24,12 @@ public class SwerveDrive extends Command {
      * @param ySpeedSupplier The supplier for the percent y speed of the robot [-1,1].
      * @param zSteerSupplier The supplier for the percent steer speed of the robot [-1,1].
      */
-    public SwerveDrive(Drivetrain drivetrain, Supplier<Double> xSpeedSupplier, Supplier<Double> ySpeedSupplier, Supplier<Double> zSteerSupplier) {
+    public SwerveDrive(Drivetrain drivetrain, Supplier<Double> xSpeedSupplier, Supplier<Double> ySpeedSupplier, Supplier<Double> zSteerSupplier, Supplier<Boolean> toggleFieldRelative) {
         this.drivetrain = drivetrain;
         this.xSpeedSupplier = xSpeedSupplier;
         this.ySpeedSupplier = ySpeedSupplier;
         this.zSteerSupplier = zSteerSupplier;
+        this.fieldRelativeToggleSupplier = toggleFieldRelative;
         
         addRequirements(drivetrain);
     }
@@ -36,10 +38,6 @@ public class SwerveDrive extends Command {
     @Override
     public void initialize() {}
 
-    public void toggleFieldRelative() {
-        this.fieldRelative = !fieldRelative;
-    }
-
     /**
      * Called every time the scheduler runs while the command is scheduled.
      * 
@@ -47,6 +45,10 @@ public class SwerveDrive extends Command {
      */
     @Override
     public void execute() {
+        if (fieldRelativeToggleSupplier.get()) {
+            fieldRelative = !fieldRelative;
+        }
+
         // Getting values from the suppliers.
         double xSpeed = xSpeedSupplier.get();
         double ySpeed = ySpeedSupplier.get();
