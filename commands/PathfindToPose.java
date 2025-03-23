@@ -1,28 +1,18 @@
 package frc.robot.subsystems.drivetrain.commands;
 
-import static edu.wpi.first.units.Units.*;
-
-import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.drivetrain.Drivetrain;
-import java.util.ArrayList;
+import java.util.function.Supplier;
 
 public class PathfindToPose extends Command {
     private Drivetrain drivetrain;
     private Pose2d endPose;
+    private Pose2d goalPose;
+    private Supplier<Boolean> override;
 
-    private Trajectory trajectory;
-    private Timer timer;
-
-    private HolonomicDriveController holonomicController;
+    private int shouldEnds = 0;
 
     /**
      * Creates a new PathfindToPose command.
@@ -30,50 +20,29 @@ public class PathfindToPose extends Command {
      * 
      * @param drivetrain The drivetrain subsystem to control.
      * @param endPose The pose to pathfind to.
+     * @param endEarly A boolean supplier that allows the command to be overriden.
      */
-    public PathfindToPose(Drivetrain drivetrain, Pose2d endPose) {
+    public PathfindToPose(Drivetrain drivetrain, Pose2d endPose, Supplier<Boolean> endEarly) {
         this.drivetrain = drivetrain;
         this.endPose = endPose;
-
-        timer = new Timer();
-        timer.start();
+        this.override = endEarly;
 
         addRequirements(drivetrain);
     }
 
     public void setGoalPose(Pose2d goalPose) {
-        this.endPose = goalPose;
+        this.goalPose = goalPose;
     }
 
     /**
      * Called when the command is initially scheduled.
      * 
-     * It generates the trajectory for the robot to follow.
+     * It updates the end pose when the command is initialized to prevent the goalPose from changing during pathfinding
      */
     @Override
     public void initialize() {
-        timer.reset();
-
-	    holonomicController = drivetrain.getController();
-
-        // Setting the tolerance of the holonomic controller
-        // For some reason this is a pose2d?
-        // Basically if the error is within these bounds, the controller says it is done with that part of the path.
-        holonomicController.setTolerance(new Pose2d(0.1, 0.1, new Rotation2d(0.02)));
-
-        // Initializing the trajectory config
-        TrajectoryConfig trajectoryConfig = new TrajectoryConfig(DriveConstants.maxLinearVelocity, DriveConstants.maxLinearAcceleration);
-        trajectoryConfig.setEndVelocity(MetersPerSecond.zero());
-        trajectoryConfig.setKinematics(drivetrain.getKinematics());
-
-        // Generating the trajectory to follow;
-        ArrayList<Pose2d> internalPoses = new ArrayList<Pose2d>();
-        
-        // The WPILib trajectory generator needs at least two poses, so this is adding the two
-        internalPoses.add(drivetrain.getPose());
-        internalPoses.add(endPose);
-
-        trajectory = TrajectoryGenerator.generateTrajectory(internalPoses, trajectoryConfig);
+        endPose = goalPose;
+        shouldEnds = 0;
     }
 
     /**
@@ -83,22 +52,34 @@ public class PathfindToPose extends Command {
      */
     @Override
     public void execute() {
-        // Sampling the state for this current point in time
-        Trajectory.State state = trajectory.sample(timer.get());
+        Pose2d curPose = drivetrain.getPose();
 
-        // Driving the robot based on the holonomic controller output
-        drivetrain.drive(holonomicController.calculate(drivetrain.getPose(), state, state.poseMeters.getRotation()));
+        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+            drivetrain.xController.calculate(curPose.getX(), endPose.getX()),// * (drivetrain.thetaController.atSetpoint() ? 1 : AdjustableValues.getNumber("PID_Dampen")),
+            drivetrain.yController.calculate(curPose.getY(), endPose.getY()),// * (drivetrain.thetaController.atSetpoint() ? 1 : AdjustableValues.getNumber("PID_Dampen")),
+            drivetrain.thetaController.calculate(curPose.getRotation().getRadians(), endPose.getRotation().getRadians()),
+            curPose.getRotation());
+
+        drivetrain.drive(speeds);
     }
 
     /**
      * Returns true when the command should end.
      * 
-     * It returns true when the trajectory is within the tolerance of the last pose.
-     * The check of if its the last pose is necessary, otherwise it'd return true immediately as it would have reached any position within the trajectory.
+     * It returns true when the current pose is within the set tolerance for 5 ticks in a row (0.1s).
+     * It will also return true if the override is active.
      */
     @Override
     public boolean isFinished() {
-        return trajectory.sample(timer.get()).poseMeters.equals(endPose) && holonomicController.atReference();
+        if (override.get()) return true;
+
+        boolean shouldEnd = drivetrain.xController.atSetpoint() && drivetrain.yController.atSetpoint() && drivetrain.thetaController.atSetpoint();
+
+        System.out.println(shouldEnd);
+        if (shouldEnd) shouldEnds++;
+        else shouldEnds = 0;
+
+        return shouldEnds > 5;
     }
 
     /**

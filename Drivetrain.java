@@ -8,9 +8,7 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import choreo.trajectory.SwerveSample;
-import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -20,8 +18,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -41,24 +37,23 @@ public class Drivetrain extends SubsystemBase {
     private SwerveModuleState[] states;
     private SwerveModulePosition[] positions;
 
-    private PIDController xController = new PIDController(AdjustableValues.getNumber("X_kP"),
-                                                          AdjustableValues.getNumber("X_kI"),
-                                                          AdjustableValues.getNumber("X_kD"));
+    public PIDController xController = new PIDController(
+        AdjustableValues.getNumber("X_kP"),
+        AdjustableValues.getNumber("X_kI"),
+        AdjustableValues.getNumber("X_kD"));
 
-    private PIDController yController = new PIDController(AdjustableValues.getNumber("Y_kP"),
-                                                          AdjustableValues.getNumber("Y_kI"),
-                                                          AdjustableValues.getNumber("Y_kD"));
+    public PIDController yController = new PIDController(
+        AdjustableValues.getNumber("Y_kP"),
+        AdjustableValues.getNumber("Y_kI"),
+        AdjustableValues.getNumber("Y_kD"));
 
-    private ProfiledPIDController thetaController = new ProfiledPIDController(AdjustableValues.getNumber("Theta_kP"),
-                                                                              AdjustableValues.getNumber("Theta_kI"),
-                                                                              AdjustableValues.getNumber("Theta_kD"),
-                                                                              new TrapezoidProfile.Constraints(
-                                                                                  DriveConstants.maxAngularVelocity.in(RadiansPerSecond),
-                                                                                  DriveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond)));
+    public PIDController thetaController = new PIDController(
+        AdjustableValues.getNumber("Theta_kP"),
+        AdjustableValues.getNumber("Theta_kI"),
+        AdjustableValues.getNumber("Theta_kD"));
 
     private SwerveDriveKinematics kinematics;
     private SwerveDrivePoseEstimator poseEstimator;
-    private HolonomicDriveController holonomicController = new HolonomicDriveController(xController, yController, thetaController);
 
     // Subsystem depencies
     private Gyro gyro;
@@ -79,6 +74,11 @@ public class Drivetrain extends SubsystemBase {
     */
     public Drivetrain(Gyro gyro, Vision vision, ModuleIO... modules) {
         System.out.println("Drivetrain initialized");
+
+        xController.setTolerance(0.01);
+        yController.setTolerance(0.01);
+        thetaController.setTolerance(0.01);
+
         // Saving subsystems
         this.gyro = gyro;
         this.vision = vision;
@@ -345,19 +345,9 @@ public class Drivetrain extends SubsystemBase {
         return kinematics;
     }
     
-    /** Gets the holonomic controller for the robot. */
-    public HolonomicDriveController getController() {
-        return holonomicController;
-    }
-
     /** Follows a choreo trajectory. */
     public void followTrajectory(SwerveSample sample) {
-        double velocity = Math.hypot(sample.vx, sample.vy);
-        double acceleration = Math.hypot(sample.ax, sample.ay);
-
-        Trajectory.State state = new Trajectory.State(sample.getTimestamp(), velocity, acceleration, sample.getPose(), acceleration / Math.pow(velocity, 2));
-        
-        drive(holonomicController.calculate(getPose(), state, Rotation2d.fromRadians(sample.heading)));
+        drive(ChassisSpeeds.fromFieldRelativeSpeeds(sample.getChassisSpeeds(), getHeading()));
     }
 
     /** Sets the states of each module to an "X" pattern. */
