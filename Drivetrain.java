@@ -26,7 +26,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.AdjustableValues;
 import frc.robot.Constants;
-import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.gyro.Gyro;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.util.VisionResult;
@@ -100,7 +99,7 @@ public class Drivetrain extends SubsystemBase {
          *  BR | FR 
          */
 
-        kinematics = new SwerveDriveKinematics(DriveConstants.translations);
+        kinematics = new SwerveDriveKinematics(Constants.DriveConstants.translations);
 
         poseEstimator = new SwerveDrivePoseEstimator(kinematics, getHeading(), positions, new Pose2d());
 
@@ -111,13 +110,13 @@ public class Drivetrain extends SubsystemBase {
         // Configuring Pathplanner
         AutoBuilder.configure(this::getPose, this::resetPose, this::getSpeeds, this::drive,
             new PPHolonomicDriveController(
-                new PIDConstants(DriveConstants.kPDriveDefault, DriveConstants.kIDriveDefault, DriveConstants.kDDriveDefault),
-                new PIDConstants(DriveConstants.kPSteerDefault, DriveConstants.kISteerDefault, DriveConstants.kDSteerDefault)
+                new PIDConstants(Constants.DriveConstants.kPDriveDefault, Constants.DriveConstants.kIDriveDefault, Constants.DriveConstants.kDDriveDefault),
+                new PIDConstants(Constants.DriveConstants.kPSteerDefault, Constants.DriveConstants.kISteerDefault, Constants.DriveConstants.kDSteerDefault)
             ),
             new RobotConfig(
-                DriveConstants.robotMass, DriveConstants.robotMOI,
-                new ModuleConfig(DriveConstants.wheelRadius, DriveConstants.maxLinearVelocity, 1, DCMotor.getKrakenX60(1).withReduction(DriveConstants.driveGearRatio), DriveConstants.driveCurrentLimit, 2), 
-                DriveConstants.translations),
+                Constants.DriveConstants.robotMass, Constants.DriveConstants.robotMOI,
+                new ModuleConfig(Constants.DriveConstants.wheelRadius, Constants.DriveConstants.maxLinearVelocity, 1, DCMotor.getKrakenX60(1).withReduction(Constants.DriveConstants.driveGearRatio), Constants.DriveConstants.driveCurrentLimit, 2), 
+                Constants.DriveConstants.translations),
             () -> (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red)),
             this);
 
@@ -293,7 +292,7 @@ public class Drivetrain extends SubsystemBase {
 
         speeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] desiredStates = kinematics.toSwerveModuleStates(speeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, DriveConstants.maxLinearVelocity);
+        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.DriveConstants.maxLinearVelocity);
 
         for (int i = 0; i < modules.length; i++) {
             desiredStates[i].optimize(modules[i].getAngle());
@@ -353,7 +352,7 @@ public class Drivetrain extends SubsystemBase {
     /** Sets the states of each module to an "X" pattern. */
     public void xStates() {
         for (int i = 0; i < modules.length; i++) {
-            modules[i].setState(DriveConstants.xStates[i]);
+            modules[i].setState(Constants.DriveConstants.xStates[i]);
         }
     }
 }

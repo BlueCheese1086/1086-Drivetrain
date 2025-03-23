@@ -26,7 +26,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.AdjustableValues;
-import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 
 public class ModuleIOSparkMax implements ModuleIO {
@@ -56,11 +56,11 @@ public class ModuleIOSparkMax implements ModuleIO {
     public ModuleIOSparkMax(int moduleId) {
         this.moduleId = moduleId;
 
-        absEncoder = new CANcoder((int) DriveConstants.moduleConfigs[moduleId][2]);
-        encoderOffset = DriveConstants.moduleConfigs[moduleId][3];
+        absEncoder = new CANcoder((int) Constants.DriveConstants.moduleConfigs[moduleId][2]);
+        encoderOffset = Constants.DriveConstants.moduleConfigs[moduleId][3];
 
-        driveMotor = new SparkMax((int) DriveConstants.moduleConfigs[moduleId][0], MotorType.kBrushless);
-        steerMotor = new SparkMax((int) DriveConstants.moduleConfigs[moduleId][1], MotorType.kBrushless);
+        driveMotor = new SparkMax((int) Constants.DriveConstants.moduleConfigs[moduleId][0], MotorType.kBrushless);
+        steerMotor = new SparkMax((int) Constants.DriveConstants.moduleConfigs[moduleId][1], MotorType.kBrushless);
 
         driveFFController = new SimpleMotorFeedforward(AdjustableValues.getNumber("Drive_kS_" + moduleId), AdjustableValues.getNumber("Drive_kV_" + moduleId), AdjustableValues.getNumber("Drive_kA_" + moduleId), 0.02);
         steerFFController = new SimpleMotorFeedforward(AdjustableValues.getNumber("Steer_kS_" + moduleId), AdjustableValues.getNumber("Steer_kV_" + moduleId), AdjustableValues.getNumber("Steer_kA_" + moduleId), 0.02);
@@ -69,11 +69,11 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveConfig.closedLoop.p(AdjustableValues.getNumber("Drive_kP_" + moduleId), ClosedLoopSlot.kSlot0);
         driveConfig.closedLoop.i(AdjustableValues.getNumber("Drive_kI_" + moduleId), ClosedLoopSlot.kSlot0);
         driveConfig.closedLoop.d(AdjustableValues.getNumber("Drive_kD_" + moduleId), ClosedLoopSlot.kSlot0);
-        driveConfig.encoder.positionConversionFactor(DriveConstants.wheelRadius.in(Meters) / DriveConstants.driveGearRatio);
-        driveConfig.encoder.velocityConversionFactor(DriveConstants.wheelRadius.in(Meters) / DriveConstants.driveGearRatio / 60);
+        driveConfig.encoder.positionConversionFactor(Constants.DriveConstants.wheelRadius.in(Meters) / Constants.DriveConstants.driveGearRatio);
+        driveConfig.encoder.velocityConversionFactor(Constants.DriveConstants.wheelRadius.in(Meters) / Constants.DriveConstants.driveGearRatio / 60);
         driveConfig.inverted(false);
         driveConfig.idleMode(IdleMode.kCoast);
-        driveConfig.smartCurrentLimit((int) DriveConstants.driveCurrentLimit.in(Amps));
+        driveConfig.smartCurrentLimit((int) Constants.DriveConstants.driveCurrentLimit.in(Amps));
 
         SparkMaxConfig steerConfig = new SparkMaxConfig();
         steerConfig.closedLoop.p(AdjustableValues.getNumber("Steer_kP_" + moduleId), ClosedLoopSlot.kSlot0);
@@ -81,11 +81,11 @@ public class ModuleIOSparkMax implements ModuleIO {
         steerConfig.closedLoop.d(AdjustableValues.getNumber("Steer_kD_" + moduleId), ClosedLoopSlot.kSlot0);
         steerConfig.closedLoop.positionWrappingEnabled(true);
         steerConfig.closedLoop.positionWrappingInputRange(-Math.PI, Math.PI);
-        steerConfig.encoder.positionConversionFactor(1.0 / DriveConstants.steerGearRatio);
-        steerConfig.encoder.velocityConversionFactor(1.0 / DriveConstants.steerGearRatio);
+        steerConfig.encoder.positionConversionFactor(1.0 / Constants.DriveConstants.steerGearRatio);
+        steerConfig.encoder.velocityConversionFactor(1.0 / Constants.DriveConstants.steerGearRatio);
         steerConfig.inverted(false);
         steerConfig.idleMode(IdleMode.kCoast);
-        steerConfig.smartCurrentLimit((int) DriveConstants.steerCurrentLimit.in(Amps));
+        steerConfig.smartCurrentLimit((int) Constants.DriveConstants.steerCurrentLimit.in(Amps));
 
         driveMotor.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         steerMotor.configure(steerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);

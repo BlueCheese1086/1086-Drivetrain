@@ -20,7 +20,7 @@ import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.AdjustableValues;
-import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 
 public class ModuleIOSim implements ModuleIO {
@@ -50,8 +50,8 @@ public class ModuleIOSim implements ModuleIO {
         driveFFController = new SimpleMotorFeedforward(AdjustableValues.getNumber("Drive_kS_" + moduleId), AdjustableValues.getNumber("Drive_kV_" + moduleId), AdjustableValues.getNumber("Drive_kA_" + moduleId));
         steerFFController = new SimpleMotorFeedforward(AdjustableValues.getNumber("Steer_kS_" + moduleId), AdjustableValues.getNumber("Steer_kV_" + moduleId), AdjustableValues.getNumber("Steer_kA_" + moduleId));
 
-        driveMotor = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), DriveConstants.driveMOI, DriveConstants.driveGearRatio), DCMotor.getKrakenX60(1));
-        steerMotor = new DCMotorSim(LinearSystemId.createDCMotorSystem(DriveConstants.krakenX44, DriveConstants.steerMOI, DriveConstants.steerGearRatio), DriveConstants.krakenX44);
+        driveMotor = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), Constants.DriveConstants.driveMOI, Constants.DriveConstants.driveGearRatio), DCMotor.getKrakenX60(1));
+        steerMotor = new DCMotorSim(LinearSystemId.createDCMotorSystem(Constants.DriveConstants.krakenX44, Constants.DriveConstants.steerMOI, Constants.DriveConstants.steerGearRatio), Constants.DriveConstants.krakenX44);
 
         driveController = new PIDController(AdjustableValues.getNumber("Drive_kP_" + moduleId), AdjustableValues.getNumber("Drive_kI_" + moduleId), AdjustableValues.getNumber("Drive_kD_" + moduleId));
         steerController = new PIDController(AdjustableValues.getNumber("Steer_kP_" + moduleId), AdjustableValues.getNumber("Steer_kI_" + moduleId), AdjustableValues.getNumber("Steer_kD_" + moduleId));
@@ -123,7 +123,7 @@ public class ModuleIOSim implements ModuleIO {
 
     @Override
     public void resetPosition(SwerveModulePosition position) {
-        driveMotor.setAngle(position.distanceMeters / DriveConstants.wheelRadius.in(Meters));
+        driveMotor.setAngle(position.distanceMeters / Constants.DriveConstants.wheelRadius.in(Meters));
         steerMotor.setAngle(position.angle.getRadians());
     }
 
@@ -159,17 +159,17 @@ public class ModuleIOSim implements ModuleIO {
 
     @Override
     public Distance getDistance() {
-        return Meters.of(driveMotor.getAngularPositionRad() * DriveConstants.driveGearRatio * DriveConstants.wheelRadius.in(Meters));
+        return Meters.of(driveMotor.getAngularPositionRad() * Constants.DriveConstants.driveGearRatio * Constants.DriveConstants.wheelRadius.in(Meters));
     }
 
     @Override
     public LinearVelocity getDriveVelocity() {
-        return MetersPerSecond.of(driveMotor.getAngularVelocityRadPerSec() * DriveConstants.driveGearRatio * DriveConstants.wheelRadius.in(Meters));
+        return MetersPerSecond.of(driveMotor.getAngularVelocityRadPerSec() * Constants.DriveConstants.driveGearRatio * Constants.DriveConstants.wheelRadius.in(Meters));
     }
 
     @Override
     public LinearAcceleration getDriveAcceleration() {
-        return MetersPerSecondPerSecond.of(driveMotor.getAngularAccelerationRadPerSecSq() * DriveConstants.driveGearRatio * DriveConstants.wheelRadius.in(Meters));
+        return MetersPerSecondPerSecond.of(driveMotor.getAngularAccelerationRadPerSecSq() * Constants.DriveConstants.driveGearRatio * Constants.DriveConstants.wheelRadius.in(Meters));
     }
 
     @Override
