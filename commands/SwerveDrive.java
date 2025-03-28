@@ -14,6 +14,7 @@ public class SwerveDrive extends Command {
     private Supplier<Boolean> fieldRelativeToggleSupplier;
     private boolean fieldRelative = true;
     private Drivetrain drivetrain;
+    private double scalar = 1;
 
     /**
      * Creates a new SwerveDrive command.
@@ -76,15 +77,15 @@ public class SwerveDrive extends Command {
         
         if (fieldRelative) {
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                Constants.DriveConstants.maxLinearVelocity.times(-ySpeed),
-                Constants.DriveConstants.maxLinearVelocity.times(-xSpeed),
-                Constants.DriveConstants.maxAngularVelocity.times(-zSteer),
+                Constants.DriveConstants.maxLinearVelocity.times(-ySpeed * scalar),
+                Constants.DriveConstants.maxLinearVelocity.times(-xSpeed * scalar),
+                Constants.DriveConstants.maxAngularVelocity.times(-zSteer * scalar),
                 drivetrain.getHeading());
         } else {
             speeds = new ChassisSpeeds(
-                Constants.DriveConstants.maxLinearVelocity.times(-ySpeed),
-                Constants.DriveConstants.maxLinearVelocity.times(-xSpeed),
-                Constants.DriveConstants.maxAngularVelocity.times(-zSteer));
+                Constants.DriveConstants.maxLinearVelocity.times(-ySpeed * scalar),
+                Constants.DriveConstants.maxLinearVelocity.times(-xSpeed * scalar),
+                Constants.DriveConstants.maxAngularVelocity.times(-zSteer * scalar));
         }
 
         // Driving the robot
@@ -95,6 +96,10 @@ public class SwerveDrive extends Command {
     @Override
     public boolean isFinished() {
         return false;
+    }
+
+    public void setScalar(double scalar) {
+        this.scalar = MathUtil.clamp(scalar, -1, 1);
     }
 
     /** Called once the command ends or is interrupted. */
