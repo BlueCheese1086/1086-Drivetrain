@@ -3,14 +3,21 @@ package frc.robot.subsystems.drivetrain.commands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.Poses;
 import frc.robot.subsystems.drivetrain.Drivetrain;
+
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
-public class PathfindToPose extends Command {
+public class PathFindToLeft extends Command {
     private Drivetrain drivetrain;
     private Pose2d endPose;
     private Pose2d goalPose;
+    private Pose2d robotPose;
     private Supplier<Boolean> override;
+    private List<Pose2d> leftPoses = new ArrayList<>();
 
     private int shouldEnds = 0;
 
@@ -22,16 +29,20 @@ public class PathfindToPose extends Command {
      * @param endPose The pose to pathfind to.
      * @param endEarly A boolean supplier that allows the command to be overriden.
      */
-    public PathfindToPose(Drivetrain drivetrain, Pose2d endPose, Supplier<Boolean> endEarly) {
+    public PathFindToLeft(Drivetrain drivetrain, Supplier<Boolean> endEarly) {
         this.drivetrain = drivetrain;
-        this.endPose = endPose;
         this.override = endEarly;
+        this.robotPose = drivetrain.getPose();
+
+        leftPoses.add(Poses.REEF_Side1Left);
+        leftPoses.add(Poses.REEF_Side2Left);
+        leftPoses.add(Poses.REEF_Side3Left);
+        leftPoses.add(Poses.REEF_Side4Left);
+        leftPoses.add(Poses.REEF_Side5Left);
+        leftPoses.add(Poses.REEF_Side6Left);
+
 
         addRequirements(drivetrain);
-    }
-
-    public void setGoalPose(Pose2d goalPose) {
-        this.goalPose = goalPose;
     }
 
     /**
@@ -41,7 +52,7 @@ public class PathfindToPose extends Command {
      */
     @Override
     public void initialize() {
-        endPose = goalPose;
+        endPose = robotPose.nearest(leftPoses);
         shouldEnds = 0;
     }
 
