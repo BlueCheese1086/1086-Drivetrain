@@ -5,8 +5,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.Poses;
 import frc.robot.subsystems.drivetrain.Drivetrain;
-
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -14,25 +12,21 @@ import java.util.function.Supplier;
 public class PathFindToLeft extends Command {
     private Drivetrain drivetrain;
     private Pose2d endPose;
-    private Pose2d goalPose;
-    private Pose2d robotPose;
     private Supplier<Boolean> override;
     private List<Pose2d> leftPoses = new ArrayList<>();
 
     private int shouldEnds = 0;
 
     /**
-     * Creates a new PathfindToPose command.
-     * It controls the drivetrain and moves it to a certain pose on the field, while also travelling to other poses on the way.
+     * Creates a new PathfindToLeft command.
+     * It pathfinds to the nearest leftmost tower on a reef.
      * 
      * @param drivetrain The drivetrain subsystem to control.
-     * @param endPose The pose to pathfind to.
-     * @param endEarly A boolean supplier that allows the command to be overriden.
+     * @param override A boolean supplier that allows the command to be overriden.
      */
-    public PathFindToLeft(Drivetrain drivetrain, Supplier<Boolean> endEarly) {
+    public PathFindToLeft(Drivetrain drivetrain, Supplier<Boolean> override) {
         this.drivetrain = drivetrain;
-        this.override = endEarly;
-        this.robotPose = drivetrain.getPose();
+        this.override = override;
 
         leftPoses.add(Poses.REEF_Side1Left);
         leftPoses.add(Poses.REEF_Side2Left);
@@ -40,7 +34,6 @@ public class PathFindToLeft extends Command {
         leftPoses.add(Poses.REEF_Side4Left);
         leftPoses.add(Poses.REEF_Side5Left);
         leftPoses.add(Poses.REEF_Side6Left);
-
 
         addRequirements(drivetrain);
     }
@@ -52,7 +45,7 @@ public class PathFindToLeft extends Command {
      */
     @Override
     public void initialize() {
-        endPose = robotPose.nearest(leftPoses);
+        endPose = drivetrain.getPose().nearest(leftPoses);
         shouldEnds = 0;
     }
 
@@ -66,8 +59,8 @@ public class PathFindToLeft extends Command {
         Pose2d curPose = drivetrain.getPose();
 
         ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-            drivetrain.xController.calculate(curPose.getX(), endPose.getX()),// * (drivetrain.thetaController.atSetpoint() ? 1 : AdjustableValues.getNumber("PID_Dampen")),
-            drivetrain.yController.calculate(curPose.getY(), endPose.getY()),// * (drivetrain.thetaController.atSetpoint() ? 1 : AdjustableValues.getNumber("PID_Dampen")),
+            drivetrain.xController.calculate(curPose.getX(), endPose.getX()),
+            drivetrain.yController.calculate(curPose.getY(), endPose.getY()),
             drivetrain.thetaController.calculate(curPose.getRotation().getRadians(), endPose.getRotation().getRadians()),
             curPose.getRotation());
 
@@ -86,9 +79,11 @@ public class PathFindToLeft extends Command {
 
         boolean shouldEnd = drivetrain.xController.atSetpoint() && drivetrain.yController.atSetpoint() && drivetrain.thetaController.atSetpoint();
 
-        System.out.println(shouldEnd);
-        if (shouldEnd) shouldEnds++;
-        else shouldEnds = 0;
+        if (shouldEnd) {
+            shouldEnds++;
+        } else {
+            shouldEnds = 0;
+        }
 
         return shouldEnds > 5;
     }
