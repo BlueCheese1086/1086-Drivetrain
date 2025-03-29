@@ -25,8 +25,9 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.AdjustableValues;
 import frc.robot.Constants;
+import frc.robot.subsystems.util.AdjustableValues;
+
 import org.littletonrobotics.junction.Logger;
 
 public class ModuleIOSparkMax implements ModuleIO {

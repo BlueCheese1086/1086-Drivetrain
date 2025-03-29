@@ -19,8 +19,9 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import frc.robot.AdjustableValues;
 import frc.robot.Constants;
+import frc.robot.subsystems.util.AdjustableValues;
+
 import org.littletonrobotics.junction.Logger;
 
 public class ModuleIOSim implements ModuleIO {
