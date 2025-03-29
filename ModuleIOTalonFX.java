@@ -44,17 +44,17 @@ public class ModuleIOTalonFX implements ModuleIO {
     public ModuleIOTalonFX(int moduleId) {
         this.moduleId = moduleId;
 
-        absEncoder = new CANcoder((int) Constants.DriveConstants.moduleConfigs[moduleId][2]);
-        encoderOffset = Constants.DriveConstants.moduleConfigs[moduleId][3];
+        absEncoder = new CANcoder((int) DriveConstants.moduleConfigs[moduleId][2]);
+        encoderOffset = DriveConstants.moduleConfigs[moduleId][3];
 
-        driveMotor = new TalonFX((int) Constants.DriveConstants.moduleConfigs[moduleId][0]);
-        steerMotor = new TalonFX((int) Constants.DriveConstants.moduleConfigs[moduleId][1]);
+        driveMotor = new TalonFX((int) DriveConstants.moduleConfigs[moduleId][0]);
+        steerMotor = new TalonFX((int) DriveConstants.moduleConfigs[moduleId][1]);
 
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
 
-        driveConfig.CurrentLimits.SupplyCurrentLimit = Constants.DriveConstants.driveCurrentLimit.in(Amps);
+        driveConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.driveCurrentLimit.in(Amps);
         driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        driveConfig.Feedback.SensorToMechanismRatio = Constants.DriveConstants.driveGearRatio;
+        driveConfig.Feedback.SensorToMechanismRatio = DriveConstants.driveGearRatio;
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         driveConfig.Slot0.kP = AdjustableValues.getNumber("Drive_kP_" + moduleId);
@@ -66,9 +66,9 @@ public class ModuleIOTalonFX implements ModuleIO {
 
         TalonFXConfiguration steerConfig = new TalonFXConfiguration();
 
-        steerConfig.CurrentLimits.SupplyCurrentLimit = Constants.DriveConstants.steerCurrentLimit.in(Amps);
+        steerConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.steerCurrentLimit.in(Amps);
         steerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        steerConfig.Feedback.SensorToMechanismRatio = Constants.DriveConstants.steerGearRatio;
+        steerConfig.Feedback.SensorToMechanismRatio = DriveConstants.steerGearRatio;
         steerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         steerConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         steerConfig.Slot0.kP = AdjustableValues.getNumber("Steer_kP_" + moduleId);
@@ -138,14 +138,14 @@ public class ModuleIOTalonFX implements ModuleIO {
 
     @Override
     public void setState(SwerveModuleState state) {
-        driveMotor.setControl(new VelocityVoltage(RadiansPerSecond.of(state.speedMetersPerSecond / Constants.DriveConstants.wheelRadius.in(Meters))));
+        driveMotor.setControl(new VelocityVoltage(RadiansPerSecond.of(state.speedMetersPerSecond / DriveConstants.wheelRadius.in(Meters))));
         steerMotor.setControl(new PositionVoltage(state.angle.getMeasure()));
     }
 
     @Override
     public void resetPosition(SwerveModulePosition position) {
         steerMotor.setPosition(position.angle.getMeasure());
-        driveMotor.setPosition(Radians.of(position.distanceMeters / Constants.DriveConstants.wheelRadius.in(Meters)));
+        driveMotor.setPosition(Radians.of(position.distanceMeters / DriveConstants.wheelRadius.in(Meters)));
     }
 
     @Override
@@ -165,17 +165,17 @@ public class ModuleIOTalonFX implements ModuleIO {
 
     @Override
     public Distance getDistance() {
-        return Meters.of(driveMotor.getPosition().getValue().in(Radians) * Constants.DriveConstants.wheelRadius.in(Meters));
+        return Meters.of(driveMotor.getPosition().getValue().in(Radians) * DriveConstants.wheelRadius.in(Meters));
     }
 
     @Override
     public LinearVelocity getDriveVelocity() {
-        return MetersPerSecond.of(driveMotor.getVelocity().getValue().in(RadiansPerSecond) * Constants.DriveConstants.wheelRadius.in(Meters));
+        return MetersPerSecond.of(driveMotor.getVelocity().getValue().in(RadiansPerSecond) * DriveConstants.wheelRadius.in(Meters));
     }
 
     @Override
     public LinearAcceleration getDriveAcceleration() {
-        return MetersPerSecondPerSecond.of(driveMotor.getAcceleration().getValue().in(RadiansPerSecondPerSecond) * Constants.DriveConstants.wheelRadius.in(Meters));
+        return MetersPerSecondPerSecond.of(driveMotor.getAcceleration().getValue().in(RadiansPerSecondPerSecond) * DriveConstants.wheelRadius.in(Meters));
     }
 
     @Override

@@ -4,6 +4,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
+import frc.robot.subsystems.drivetrain.DriveConstants;
 import frc.robot.subsystems.drivetrain.Drivetrain;
 import java.util.function.Supplier;
 
@@ -77,15 +78,15 @@ public class SwerveDrive extends Command {
         
         if (fieldRelative) {
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                Constants.DriveConstants.maxLinearVelocity.times(-ySpeed * scalar),
-                Constants.DriveConstants.maxLinearVelocity.times(-xSpeed * scalar),
-                Constants.DriveConstants.maxAngularVelocity.times(-zSteer * scalar),
+                DriveConstants.maxLinearVelocity.times(-ySpeed * scalar),
+                DriveConstants.maxLinearVelocity.times(-xSpeed * scalar),
+                DriveConstants.maxAngularVelocity.times(-zSteer * scalar),
                 drivetrain.getHeading());
         } else {
             speeds = new ChassisSpeeds(
-                Constants.DriveConstants.maxLinearVelocity.times(-ySpeed * scalar),
-                Constants.DriveConstants.maxLinearVelocity.times(-xSpeed * scalar),
-                Constants.DriveConstants.maxAngularVelocity.times(-zSteer * scalar));
+                DriveConstants.maxLinearVelocity.times(-ySpeed * scalar),
+                DriveConstants.maxLinearVelocity.times(-xSpeed * scalar),
+                DriveConstants.maxAngularVelocity.times(-zSteer * scalar));
         }
 
         // Driving the robot
