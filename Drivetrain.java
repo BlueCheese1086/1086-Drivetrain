@@ -2,6 +2,26 @@ package frc.robot.subsystems.drivetrain;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix.sensors.CANCoderConfiguration;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.DifferentialSensorSourceValue;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerFeedbackType;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain;
+import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import com.ctre.phoenix6.swerve.SwerveModule;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
@@ -25,6 +45,7 @@ import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.Constants.RobotMap;
 import frc.robot.subsystems.gyro.Gyro;
 import frc.robot.subsystems.util.AdjustableValues;
 import frc.robot.subsystems.vision.Vision;
@@ -72,6 +93,98 @@ public class Drivetrain extends SubsystemBase {
      * @param modules The module IOs to drive on.
     */
     public Drivetrain(Gyro gyro, Vision vision, ModuleIO... modules) {
+        SwerveDrivetrainConstants dConst = new SwerveDrivetrainConstants();
+    
+        dConst.Pigeon2Configs = new Pigeon2Configuration();
+        dConst.Pigeon2Id = RobotMap.GYRO_Pigeon2Id; // Same as default...  Should I leave it?
+        
+        SwerveModuleConstants<TalonFXConfiguration,TalonFXConfiguration,CANcoderConfiguration> mConst = new SwerveModuleConstants<TalonFXConfiguration,TalonFXConfiguration,CANcoderConfiguration>();
+
+        int moduleId = 0;
+        
+        Slot0Configs driveSlot0 = new Slot0Configs();
+        driveSlot0.kP = DriveConstants.kPDriveDefault;
+        driveSlot0.kI = DriveConstants.kIDriveDefault;
+        driveSlot0.kD = DriveConstants.kDDriveDefault;
+        driveSlot0.kS = DriveConstants.kSDriveDefault;
+        driveSlot0.kV = DriveConstants.kVDriveDefault;
+        driveSlot0.kA = DriveConstants.kADriveDefault;
+
+        Slot0Configs steerSlot0 = new Slot0Configs();
+        steerSlot0.kP = DriveConstants.kPSteerDefault;
+        steerSlot0.kI = DriveConstants.kISteerDefault;
+        steerSlot0.kD = DriveConstants.kDSteerDefault;
+        steerSlot0.kS = DriveConstants.kSSteerDefault;
+        steerSlot0.kV = DriveConstants.kVSteerDefault;
+        steerSlot0.kA = DriveConstants.kASteerDefault;
+
+        TalonFXConfiguration driveConfig = new TalonFXConfiguration();
+        driveConfig.Audio.AllowMusicDurDisable = false;
+        driveConfig.Audio.BeepOnBoot = true;
+        driveConfig.Audio.BeepOnConfig = true;
+        driveConfig.ClosedLoopGeneral.ContinuousWrap = true;
+        driveConfig.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = 0;
+        driveConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0;
+        driveConfig.CurrentLimits.StatorCurrentLimit = DriveConstants.driveCurrentLimit.in(Amps);
+        driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        driveConfig.DifferentialConstants.PeakDifferentialDutyCycle = 1;
+        driveConfig.DifferentialConstants.PeakDifferentialVoltage = 12;
+        driveConfig.DifferentialSensors.DifferentialRemoteSensorID = (int) DriveConstants.moduleConfigs[moduleId][2];
+        driveConfig.DifferentialSensors.DifferentialSensorSource = DifferentialSensorSourceValue.RemoteCANcoder;
+        driveConfig.Feedback.FeedbackRemoteSensorID = (int) DriveConstants.moduleConfigs[moduleId][2];
+        // driveConfig.Feedback.FeedbackRotorOffset; // Not sure if this needs to be set... The offset will be set in the CANcoder config
+        driveConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+        driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        driveConfig.MotorOutput.NeutralMode;
+        driveConfig.MotorOutput.PeakForwardDutyCycle;
+        driveConfig.MotorOutput.PeakReverseDutyCycle;
+        driveConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod;
+        driveConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod;
+        driveConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable;
+        driveConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold;
+        driveConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable;
+        driveConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold;
+        driveConfig.Voltage.PeakForwardVoltage;
+        driveConfig.Voltage.PeakReverseVoltage;
+        driveConfig.Voltage.SupplyVoltageTimeConstant;
+
+        TalonFXConfiguration steerConfig = new TalonFXConfiguration();
+        CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
+
+        mConst.CouplingGearRatio = 0; //?
+        mConst.DriveFrictionVoltage = 0.25; //?
+        mConst.DriveInertia = DriveConstants.driveMOI;
+        mConst.DriveMotorClosedLoopOutput = ClosedLoopOutputType.Voltage;
+        mConst.DriveMotorGains = driveSlot0;
+        mConst.DriveMotorGearRatio = DriveConstants.driveGearRatio;
+        mConst.DriveMotorId = (int) DriveConstants.moduleConfigs[moduleId][0];
+        mConst.DriveMotorInitialConfigs = new TalonFXConfiguration(); //?
+        mConst.DriveMotorInverted = true;
+        mConst.DriveMotorType = DriveMotorArrangement.TalonFX_Integrated;
+        mConst.EncoderId = (int) DriveConstants.moduleConfigs[moduleId][2];
+        mConst.EncoderInitialConfigs = new CANcoderConfiguration(); //?
+        mConst.EncoderInverted = false;
+        mConst.EncoderOffset = DriveConstants.moduleConfigs[moduleId][3];
+        mConst.FeedbackSource = SteerFeedbackType.RemoteCANcoder;
+        mConst.LocationX = DriveConstants.flModuleOffset.getX();
+        mConst.LocationY = DriveConstants.flModuleOffset.getY();
+        mConst.SlipCurrent = 120; //?
+        mConst.SpeedAt12Volts = DriveConstants.maxLinearVelocity.in(MetersPerSecond);
+        mConst.SteerFrictionVoltage = 0.25; //?
+        mConst.SteerInertia = DriveConstants.steerMOI;
+        mConst.SteerMotorClosedLoopOutput = ClosedLoopOutputType.Voltage;
+        mConst.SteerMotorGains = steerSlot0;
+        mConst.SteerMotorGearRatio = DriveConstants.steerGearRatio;
+        mConst.SteerMotorId = (int) DriveConstants.moduleConfigs[moduleId][1];
+        mConst.SteerMotorInitialConfigs = new TalonFXConfiguration(); //?
+        mConst.SteerMotorInverted = false;
+        mConst.SteerMotorType = SteerMotorArrangement.TalonFX_Integrated;
+        mConst.WheelRadius = DriveConstants.wheelRadius.in(Meters);
+
+
+
+        SwerveDrivetrain<TalonFX,TalonFX,CANcoder> dt = new SwerveDrivetrain<TalonFX,TalonFX,CANcoder>(TalonFX::new, TalonFX::new, CANcoder::new, dConst, mConst);
+        // SwerveModule<TalonFX,TalonFX,CANcoder> module = new SwerveModule<TalonFX,TalonFX,CANcoder>(TalonFX::new, TalonFX::new, CANcoder::new, consts, "rio", 1, 0);
         System.out.println("Drivetrain initialized");
 
         xController.setTolerance(0.01);
