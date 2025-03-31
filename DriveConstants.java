@@ -4,14 +4,7 @@
 
 package frc.robot.subsystems.drivetrain;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.Kilograms;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
+import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -29,11 +22,13 @@ import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.Constants.RobotMap;
 
 /** Add your docs here. */
-public class DriveConstants {        public static final Distance robotWidth = Inches.of(22.75);
+public class DriveConstants {
+    public static final Distance robotWidth = Inches.of(22.75);
     public static final Distance robotLength = Inches.of(22.75);
 
     public static final LinearVelocity maxLinearVelocity = MetersPerSecond.of(4.73);
     public static final LinearAcceleration maxLinearAcceleration = MetersPerSecondPerSecond.of(3);
+
     public static final AngularVelocity maxAngularVelocity = RadiansPerSecond.of(3 * Math.PI);
     public static final AngularAcceleration maxAngularAcceleration = RadiansPerSecondPerSecond.of(Math.PI);
 
