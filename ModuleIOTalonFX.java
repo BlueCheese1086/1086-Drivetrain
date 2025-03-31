@@ -33,6 +33,10 @@ public class ModuleIOTalonFX implements ModuleIO {
     private TalonFX steerMotor;
     private CANcoder absEncoder;
 
+    // Control Modes
+    private PositionVoltage steerControl;
+    private VelocityVoltage driveControl;
+
     private double encoderOffset;
     private ModuleIOInputsAutoLogged inputs;
 
@@ -56,7 +60,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         driveConfig.Feedback.SensorToMechanismRatio = DriveConstants.driveGearRatio;
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-        driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         driveConfig.Slot0.kP = AdjustableValues.getNumber("Drive_kP_" + moduleId);
         driveConfig.Slot0.kI = AdjustableValues.getNumber("Drive_kI_" + moduleId);
         driveConfig.Slot0.kD = AdjustableValues.getNumber("Drive_kD_" + moduleId);
