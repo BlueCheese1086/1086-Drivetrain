@@ -52,6 +52,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.subsystems.gyro.Gyro;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.util.VisionResult;
 import frc.robot.util.AdjustableValues;
@@ -59,6 +60,7 @@ import frc.robot.util.PoseAllignment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -80,13 +82,11 @@ public class Drive extends SubsystemBase {
 
     static final Lock odometryLock = new ReentrantLock();
     private List<Pose2d> poseHistory = new ArrayList<>();
-    private final GyroIO gyroIO;
+    private final Gyro gyro;
     private final Vision vision;
-    private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
     private final Module[] modules = new Module[4]; // FL, FR, BL, BR
     private final SysIdRoutine sysId;
-    private final Alert gyroDisconnectedAlert = new Alert("Disconnected gyro, using kinematics as fallback.",
-            AlertType.kError);
+    private final Alert gyroDisconnectedAlert = new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
     private RobotConfig config;
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
     private Rotation2d rawGyroRotation = new Rotation2d();
@@ -120,14 +120,14 @@ public class Drive extends SubsystemBase {
     public HolonomicDriveController trajDriveController = new HolonomicDriveController(autoXPID, autoYPID, trajHeading);
 
     public Drive(
-            GyroIO gyroIO,
+            Gyro gyro,
             Vision vision,
             ModuleIO flModuleIO,
             ModuleIO frModuleIO,
             ModuleIO blModuleIO,
             ModuleIO brModuleIO) {
 
-        this.gyroIO = gyroIO;
+        this.gyro = gyro;
         this.vision = vision;
         modules[0] = new Module(flModuleIO, 0, TunerConstants.FrontLeft);
         modules[1] = new Module(frModuleIO, 1, TunerConstants.FrontRight);
@@ -178,8 +178,6 @@ public class Drive extends SubsystemBase {
     @Override
     public void periodic() {
         odometryLock.lock(); // Prevents odometry updates while reading data
-        gyroIO.updateInputs(gyroInputs);
-        Logger.processInputs("Drive/Gyro", gyroInputs);
         for (var module : modules) {
             module.periodic();
         }
@@ -219,9 +217,9 @@ public class Drive extends SubsystemBase {
             }
 
             // Update gyro angle
-            if (gyroInputs.connected) {
+            if (!Objects.isNull(gyro) && gyro.isConnected()) {
                 // Use the real gyro angle
-                rawGyroRotation = gyroInputs.odometryYawPositions[i];
+                rawGyroRotation = gyro.getHeading();
                 checkTip();
             } else {
                 // Use the angle delta from the kinematics and module deltas
@@ -282,8 +280,10 @@ public class Drive extends SubsystemBase {
     }
 
     public void checkTip() {
-        if (gyroInputs.tilt >= 0.0) {
-            Logger.recordOutput("Drive/Debug/Gyro/Tilt", gyroInputs.tilt);
+        if (Objects.isNull(gyro)) return;
+
+        if (gyro.getRoll().gte(Radians.zero())) {
+            Logger.recordOutput("Drive/Debug/Gyro/Tilt", gyro.getRoll());
             stop();
         }
     }
