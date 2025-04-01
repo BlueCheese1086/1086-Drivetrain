@@ -1,6 +1,14 @@
 package frc.robot.subsystems.drive;
 
-import edu.wpi.first.math.util.Units;
+import static edu.wpi.first.units.Units.*;
+
+import com.pathplanner.lib.path.PathConstraints;
+
+import edu.wpi.first.units.measure.AngularAcceleration;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.units.measure.LinearVelocity;
 
 public class DriveConstants {
     public static class Characterization {
@@ -10,23 +18,41 @@ public class DriveConstants {
         public static final double wheelRadiusRampRate = 0.05; // Rad/Sec^2
     }
 
-    public static class ControlConstants {
-        public static final double kPAngle = 5.0;
-        public static final double kDAngle = 0.4;
-        public static final double angleMaxVelocity = 5.0;
-        public static final double angleMaxAccel = 20.0;
-        public static final double maxAccel = 4.75;
-        public static final double maxVelocity = 3.25;
-    }
+    public static final double kPX = 10;
+    public static final double kIX = 0;
+    public static final double kDX = 0;
+
+    public static final double kPY = 10;
+    public static final double kIY = 0;
+    public static final double kDY = 0;
+
+    public static final double kPTheta = 5;
+    public static final double kITheta = 0;
+    public static final double kDTheta = 0.4;
 
     public static final double driveGearing = 6.746;
     public static final double turnGearing = 150.0 / 7.0;
 
-    public static final double drivePositionConversionFactor = 2.0 * Math.PI * Units.inchesToMeters(2.00)
-            / driveGearing;
-    public static final double turnPositionConversionFactor = 2.0 * Math.PI / turnGearing;
+    public static final Distance transX = Inches.of(11.375);
+    public static final Distance transY = Inches.of(11.375);
+    public static final Distance wheelRadius = Inches.of(2);
+    public static final Distance robotRadius = Meters.of(Math.hypot(transX.in(Meters), transY.in(Meters)));
 
+    public static final double drivePositionConversionFactor = 2.0 * Math.PI * wheelRadius.in(Meters) / driveGearing;
     public static final double driveVelocityFactor = drivePositionConversionFactor / 60.0;
+
+    public static final double turnPositionConversionFactor = 2.0 * Math.PI / turnGearing;
     public static final double turnVelocityFactor = turnPositionConversionFactor / 60.0;
-    public static final boolean tuningMode = false;
-};
+
+    public static final LinearVelocity maxLinearVelocity = MetersPerSecond.of(4.73);
+    public static final LinearAcceleration maxLinearAcceleration = MetersPerSecondPerSecond.of(4.75);
+
+    public static final AngularVelocity maxAngularVelocity = RadiansPerSecond.of(5);
+    public static final AngularAcceleration maxAngularAcceleration = RadiansPerSecondPerSecond.of(20);
+
+    public static final PathConstraints ppConstraints = new PathConstraints(
+            DriveConstants.maxLinearVelocity,
+            DriveConstants.maxLinearAcceleration,
+            DriveConstants.maxAngularVelocity,
+            DriveConstants.maxAngularAcceleration);
+}
