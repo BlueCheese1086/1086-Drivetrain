@@ -171,7 +171,7 @@ public class DriveCommands {
     public static Command driveForTime(Drive drive, double xSpeed, double ySpeed, double omega, double seconds) {
         return Commands.run(() -> drive.runVelocity(new ChassisSpeeds(xSpeed, ySpeed, omega)), drive)
             .withTimeout(seconds)
-            .andThen(() -> drive.stopWithX());
+            .andThen(() -> drive.stop());
     }
 
     public static Command pidDriveToRelativePose(Drive drive, Translation2d translation) {
@@ -192,7 +192,7 @@ public class DriveCommands {
                 drive.runVelocity(speeds);
             },drive)
             .until(() -> (xController.atSetpoint() && yController.atSetpoint() && thetaController.atGoal()))
-            .andThen(() -> drive.stopWithX());
+            .andThen(() -> drive.stop());
     }
 
     public static Command pidDriveToPose(Drive drive, Pose2d goal) {
@@ -211,7 +211,7 @@ public class DriveCommands {
                 drive.runVelocity(speeds);
             },drive)
             .until(() -> (xController.atSetpoint() && yController.atSetpoint() && thetaController.atGoal()))
-            .andThen(() -> drive.stopWithX());
+            .andThen(() -> drive.stop());
     }
 
     public static Command wpilibTrajToPose(Drive drive, Pose2d goal) {
@@ -236,8 +236,8 @@ public class DriveCommands {
         });
     }
 
-    public static Command ppToPose(Drive drive, Pose2d goal, BooleanSupplier override) {
-        return AutoBuilder.pathfindToPose(goal, DriveConstants.ppConstraints).until(override);
+    public static Command ppToPose(Drive drive, Pose2d goal) {
+        return AutoBuilder.pathfindToPose(goal, DriveConstants.ppConstraints);
     }
 
     /**
@@ -351,6 +351,12 @@ public class DriveCommands {
                                             System.out.printf("\tGyro Delta: #%.3f radians\n", state.gyroDelta);
                                             System.out.printf("\tWheel Radius: #%.3f meters, #%.3f inches", wheelRadius, Units.inchesToMeters(wheelRadius));
                                         })));
+    }
+
+    public static Command xStates(Drive drive) {
+        drive.xStates();
+
+        return new WaitCommand(1);
     }
 
     private static class WheelRadiusCharacterizationState {

@@ -4,6 +4,8 @@ import static edu.wpi.first.units.Units.*;
 
 import com.pathplanner.lib.path.PathConstraints;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -49,6 +51,13 @@ public class DriveConstants {
 
     public static final AngularVelocity maxAngularVelocity = RadiansPerSecond.of(5);
     public static final AngularAcceleration maxAngularAcceleration = RadiansPerSecondPerSecond.of(20);
+
+    public static final SwerveModuleState[] xStates = {
+        new SwerveModuleState(0, new Rotation2d(-3 * Math.PI / 4)),
+        new SwerveModuleState(0, new Rotation2d( 3 * Math.PI / 4)),
+        new SwerveModuleState(0, new Rotation2d( 3 * Math.PI / 4)),
+        new SwerveModuleState(0, new Rotation2d(-3 * Math.PI / 4))
+    };
 
     public static final PathConstraints ppConstraints = new PathConstraints(
             DriveConstants.maxLinearVelocity,

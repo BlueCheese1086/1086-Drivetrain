@@ -130,9 +130,7 @@ public class Drive extends SubsystemBase {
         // Configure SysId
         sysId = new SysIdRoutine(
                 new SysIdRoutine.Config(
-                        null,
-                        null,
-                        null,
+                        null, null, null,
                         (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
                 new SysIdRoutine.Mechanism(
                         (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
@@ -153,17 +151,13 @@ public class Drive extends SubsystemBase {
             poseEstimator.addVisionMeasurement(result.getPose2d(), result.getTimestamp());
         }
 
-        // Stop moving when disabled
         if (DriverStation.isDisabled()) {
-            for (var module : modules) {
-                module.stop();
-            }
-        }
+            // Stop moving when disabled
+            stop();
 
-        // Log empty setpoint states when disabled
-        if (DriverStation.isDisabled()) {
-            Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
-            Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
+            // Log empty setpoint states when disabled
+            Logger.recordOutput("/Drive/SwerveStates/Setpoints", new SwerveModuleState[] {});
+            Logger.recordOutput("/Drive/SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
         }
 
         // Update odometry
@@ -184,10 +178,13 @@ public class Drive extends SubsystemBase {
 
             // Update gyro angle
             if (!Objects.isNull(gyro) && gyro.isConnected()) {
+                gyroDisconnectedAlert.set(false);
+                
                 // Use the real gyro angle
                 rawGyroRotation = gyro.getHeading();
-                checkTip();
             } else {
+                gyroDisconnectedAlert.set(true);
+                
                 // Use the angle delta from the kinematics and module deltas
                 Twist2d twist = kinematics.toTwist2d(moduleDeltas);
                 rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
@@ -223,7 +220,7 @@ public class Drive extends SubsystemBase {
         }
 
         // Log optimized setpoints (runSetpoint mutates each state)
-        Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
+        Logger.recordOutput("Drive/States/Optimized", setpointStates);
     }
 
     /** Runs the drive in a straight line with the specified drive output. */
@@ -238,28 +235,17 @@ public class Drive extends SubsystemBase {
         runVelocity(new ChassisSpeeds());
     }
 
-    public void checkTip() {
-        if (Objects.isNull(gyro)) return;
-
-        if (gyro.getRoll().gte(Radians.zero())) {
-            Logger.recordOutput("Drive/Debug/Gyro/Tilt", gyro.getRoll());
-            stop();
-        }
-    }
-
     /**
      * Stops the drive and turns the modules to an X arrangement to resist movement.
      * The modules will
      * return to their normal orientations the next time a nonzero velocity is
      * requested.
      */
-    public void stopWithX() {
-        Rotation2d[] headings = new Rotation2d[4];
-        for (int i = 0; i < 4; i++) {
-            headings[i] = getModuleTranslations()[i].getAngle();
-        }
-        kinematics.resetHeadings(headings);
-        stop();
+    public void xStates() {
+        modules[0].runSetpoint(DriveConstants.xStates[0]);
+        modules[1].runSetpoint(DriveConstants.xStates[1]);
+        modules[2].runSetpoint(DriveConstants.xStates[2]);
+        modules[3].runSetpoint(DriveConstants.xStates[3]);
     }
 
     public void logPose() {
