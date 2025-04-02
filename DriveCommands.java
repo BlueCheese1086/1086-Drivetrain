@@ -23,11 +23,12 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.Constants;
 import frc.robot.subsystems.drive.DriveConstants.Characterization;
 import frc.robot.util.AdjustableValues;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 public class DriveCommands {
@@ -83,20 +84,18 @@ public class DriveCommands {
             Supplier<Double> xSupplier,
             Supplier<Double> ySupplier,
             Supplier<Double> omegaSupplier,
-            Supplier<Double> deadbandSupplier,
             Supplier<Double> percentSupplier) {
         return Commands.run(() -> {
                 // Getting supplier values
                 double x = xSupplier.get();
                 double y = ySupplier.get();
                 double omega = omegaSupplier.get();
-                double deadband = deadbandSupplier.get();
                 double percent = percentSupplier.get();
 
                 // Applying deadbands
-                x = MathUtil.applyDeadband(x, deadband);
-                y = MathUtil.applyDeadband(y, deadband);
-                omega = MathUtil.applyDeadband(omega, deadband);
+                x = MathUtil.applyDeadband(x, Constants.deadband);
+                y = MathUtil.applyDeadband(y, Constants.deadband);
+                omega = MathUtil.applyDeadband(omega, Constants.deadband);
 
                 // Squaring inputs for more precise control
                 x = Math.copySign(x * x, x);
