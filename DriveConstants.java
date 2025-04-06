@@ -40,14 +40,12 @@ public class DriveConstants {
     public static final double kDDriveDefault = RobotBase.isReal() ? 0       : 0.01;
     public static final double kSDriveDefault = RobotBase.isReal() ? 0.06241 : 0;
     public static final double kVDriveDefault = RobotBase.isReal() ? 0.30278 : 0;
-    public static final double kADriveDefault = RobotBase.isReal() ? 0       : 0;
 
     public static final double kPSteerDefault = RobotBase.isReal() ? 1    : 5;
     public static final double kISteerDefault = RobotBase.isReal() ? 0    : 0;
     public static final double kDSteerDefault = RobotBase.isReal() ? 0.5  : 0;
     public static final double kSSteerDefault = RobotBase.isReal() ? 0.1  : 0;
     public static final double kVSteerDefault = RobotBase.isReal() ? 2.66 : 0;
-    public static final double kASteerDefault = RobotBase.isReal() ? 0    : 0;
 
     public static final double driveGearRatio = 5.14;
     public static final double steerGearRatio = 12.8;

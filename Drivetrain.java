@@ -54,6 +54,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class Drivetrain extends SubsystemBase {
     private ModuleIO[] modules;
+    private ModuleIOInputsAutoLogged[] moduleInputs;
     private SwerveModuleState[] states;
     private SwerveModulePosition[] positions;
 
@@ -108,7 +109,6 @@ public class Drivetrain extends SubsystemBase {
         // driveSlot0.kD = DriveConstants.kDDriveDefault;
         // driveSlot0.kS = DriveConstants.kSDriveDefault;
         // driveSlot0.kV = DriveConstants.kVDriveDefault;
-        // driveSlot0.kA = DriveConstants.kADriveDefault;
 
         // Slot0Configs steerSlot0 = new Slot0Configs();
         // steerSlot0.kP = DriveConstants.kPSteerDefault;
@@ -116,7 +116,6 @@ public class Drivetrain extends SubsystemBase {
         // steerSlot0.kD = DriveConstants.kDSteerDefault;
         // steerSlot0.kS = DriveConstants.kSSteerDefault;
         // steerSlot0.kV = DriveConstants.kVSteerDefault;
-        // steerSlot0.kA = DriveConstants.kASteerDefault;
 
         // TalonFXConfiguration driveConfig = new TalonFXConfiguration();
         // driveConfig.Audio.AllowMusicDurDisable = false;
@@ -199,12 +198,14 @@ public class Drivetrain extends SubsystemBase {
         this.vision = vision;
 
         this.modules = modules;
+        this.moduleInputs = new ModuleIOInputsAutoLogged[modules.length];
         this.states = new SwerveModuleState[modules.length];
         this.positions = new SwerveModulePosition[modules.length];
 
         for (int i = 0; i < modules.length; i++) {
-            states[i] = modules[i].getState();
-            positions[i] = modules[i].getPosition();
+            moduleInputs[i] = new ModuleIOInputsAutoLogged();
+            states[i] = moduleInputs[i].moduleState;
+            positions[i] = moduleInputs[i].modulePosition;
         }
 
         /*
@@ -252,26 +253,19 @@ public class Drivetrain extends SubsystemBase {
 
     /**
      * This function logs values from sysId.
+     * It only logs values from the drive motors.
      * 
      * @param log The log structure to apply changes to.
      */
     public void sysIdLog(SysIdRoutineLog log) {
-        log.motor("FLDrive")
-            .linearVelocity(MetersPerSecond.of(modules[0].getState().speedMetersPerSecond))
-            .linearPosition(Meters.of(modules[0].getPosition().distanceMeters))
-            .voltage(modules[0].getDriveVoltage());
-
-        log.motor("FRDrive")
-            .linearVelocity(MetersPerSecond.of(modules[1].getState().speedMetersPerSecond))
-            .linearPosition(Meters.of(modules[1].getPosition().distanceMeters));
-
-        log.motor("BLDrive")
-            .linearVelocity(MetersPerSecond.of(modules[2].getState().speedMetersPerSecond))
-            .linearPosition(Meters.of(modules[2].getPosition().distanceMeters));
-
-        log.motor("BRDrive")
-            .linearVelocity(MetersPerSecond.of(modules[3].getState().speedMetersPerSecond))
-            .linearPosition(Meters.of(modules[3].getPosition().distanceMeters));
+        for (int i = 0; i < modules.length; i++) {
+            log.motor("Module" + i + "_Drive")
+                .current(moduleInputs[i].driveCurrent)
+                .voltage(moduleInputs[i].driveVoltage)
+                .linearAcceleration(moduleInputs[i].driveAcceleration)
+                .linearVelocity(moduleInputs[i].driveVelocity)
+                .linearPosition(moduleInputs[i].driveDistance);
+        }
     }
 
     /**
@@ -297,9 +291,12 @@ public class Drivetrain extends SubsystemBase {
         SwerveModulePosition[] oldPositions = positions.clone();
 
         for (int i = 0; i < modules.length; i++) {
-            modules[i].updateInputs();
-            states[i] = modules[i].getState();
-            positions[i] = modules[i].getPosition();
+            modules[i].updateInputs(moduleInputs[i]);
+
+            Logger.processInputs("/RealOutputs/Subsystems/Drivetrain/Module" + i, moduleInputs[i]);
+            
+            states[i] = moduleInputs[i].moduleState;
+            positions[i] = moduleInputs[i].modulePosition;
         }
 
         if (gyro == null) {
@@ -371,8 +368,8 @@ public class Drivetrain extends SubsystemBase {
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, DriveConstants.maxLinearVelocity);
 
         for (int i = 0; i < modules.length; i++) {
-            desiredStates[i].optimize(modules[i].getAngle());
-            desiredStates[i].cosineScale(modules[i].getAngle());
+            desiredStates[i].optimize(moduleInputs[i].steerAngle);
+            desiredStates[i].cosineScale(moduleInputs[i].steerAngle);
 
             modules[i].setState(desiredStates[i]);
         }

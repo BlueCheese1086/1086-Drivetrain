@@ -8,22 +8,13 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.units.measure.AngularAcceleration;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.LinearAcceleration;
-import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Temperature;
-import edu.wpi.first.units.measure.Voltage;
 import frc.robot.util.AdjustableValues;
-
-import org.littletonrobotics.junction.Logger;
 
 public class ModuleIOTalonFX implements ModuleIO {
     private int moduleId;
@@ -38,7 +29,6 @@ public class ModuleIOTalonFX implements ModuleIO {
     private VelocityVoltage driveControl;
 
     private double encoderOffset;
-    private ModuleIOInputsAutoLogged inputs;
 
     /**
      * Creates a new ModuleIO with TalonFX motors.
@@ -66,13 +56,15 @@ public class ModuleIOTalonFX implements ModuleIO {
         driveConfig.Slot0.kD = AdjustableValues.getNumber("Drive_kD_" + moduleId);
         driveConfig.Slot0.kS = AdjustableValues.getNumber("Drive_kS_" + moduleId);
         driveConfig.Slot0.kV = AdjustableValues.getNumber("Drive_kV_" + moduleId);
-        driveConfig.Slot0.kA = AdjustableValues.getNumber("Drive_kA_" + moduleId);
 
         TalonFXConfiguration steerConfig = new TalonFXConfiguration();
 
         steerConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.steerCurrentLimit.in(Amps);
         steerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         steerConfig.Feedback.SensorToMechanismRatio = DriveConstants.steerGearRatio;
+        // See if this works
+        // steerConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+        // steerConfig.Feedback.FeedbackRemoteSensorID = (int) DriveConstants.moduleConfigs[moduleId][2];
         steerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         steerConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         steerConfig.Slot0.kP = AdjustableValues.getNumber("Steer_kP_" + moduleId);
@@ -80,19 +72,16 @@ public class ModuleIOTalonFX implements ModuleIO {
         steerConfig.Slot0.kD = AdjustableValues.getNumber("Steer_kD_" + moduleId);
         steerConfig.Slot0.kS = AdjustableValues.getNumber("Steer_kS_" + moduleId);
         steerConfig.Slot0.kV = AdjustableValues.getNumber("Steer_kV_" + moduleId);
-        steerConfig.Slot0.kA = AdjustableValues.getNumber("Steer_kA_" + moduleId);
         steerConfig.ClosedLoopGeneral.ContinuousWrap = true;
 
         driveMotor.getConfigurator().apply(driveConfig);
         steerMotor.getConfigurator().apply(steerConfig);
 
-        steerMotor.setPosition(getAbsoluteAngle().getRotations());
-
-        inputs = new ModuleIOInputsAutoLogged();
+        steerMotor.setPosition(absEncoder.getAbsolutePosition().getValue().in(Rotations) - encoderOffset);
     }
 
     @Override
-    public void updateInputs() {
+    public void updateInputs(ModuleIOInputs inputs) {
         // Updating PID values
 
         // What does refresh do vs apply?
@@ -103,7 +92,6 @@ public class ModuleIOTalonFX implements ModuleIO {
         if (AdjustableValues.hasChanged("Drive_kD_" + moduleId)) drivePIDConfig.kD = AdjustableValues.getNumber("Drive_kD_" + moduleId);
         if (AdjustableValues.hasChanged("Drive_kS_" + moduleId)) drivePIDConfig.kS = AdjustableValues.getNumber("Drive_kS_" + moduleId);
         if (AdjustableValues.hasChanged("Drive_kV_" + moduleId)) drivePIDConfig.kV = AdjustableValues.getNumber("Drive_kV_" + moduleId);
-        if (AdjustableValues.hasChanged("Drive_kA_" + moduleId)) drivePIDConfig.kA = AdjustableValues.getNumber("Drive_kA_" + moduleId);
         if (!drivePIDConfig.equals(new Slot0Configs())) driveMotor.getConfigurator().refresh(drivePIDConfig);
 
         Slot0Configs steerPIDConfig = new Slot0Configs();
@@ -112,32 +100,29 @@ public class ModuleIOTalonFX implements ModuleIO {
         if (AdjustableValues.hasChanged("Steer_kD_" + moduleId)) steerPIDConfig.kD = AdjustableValues.getNumber("Steer_kD_" + moduleId);
         if (AdjustableValues.hasChanged("Steer_kS_" + moduleId)) steerPIDConfig.kS = AdjustableValues.getNumber("Steer_kS_" + moduleId);
         if (AdjustableValues.hasChanged("Steer_kV_" + moduleId)) steerPIDConfig.kV = AdjustableValues.getNumber("Steer_kV_" + moduleId);
-        if (AdjustableValues.hasChanged("Steer_kA_" + moduleId)) steerPIDConfig.kA = AdjustableValues.getNumber("Steer_kA_" + moduleId);
         if (!steerPIDConfig.equals(new Slot0Configs())) steerMotor.getConfigurator().refresh(steerPIDConfig);
 
-        inputs.modulePosition = getPosition();
-        inputs.moduleState = getState();
+        inputs.steerAbsAngle = new Rotation2d(absEncoder.getAbsolutePosition().getValue()).minus(Rotation2d.fromRotations(encoderOffset));
 
-        inputs.steerAbsAngle = getAbsoluteAngle();
+        inputs.steerAngle = new Rotation2d(steerMotor.getPosition().getValue());
+        inputs.steerVelocity = steerMotor.getVelocity().getValue();
+        inputs.steerAcceleration = steerMotor.getAcceleration().getValue();
 
-        inputs.steerAngle = getAngle();
-        inputs.steerVelocity = getSteerVelocity();
-        inputs.steerAcceleration = getSteerAcceleration();
+        inputs.driveDistance = Meters.of(driveMotor.getPosition().getValue().in(Radians) * DriveConstants.wheelRadius.in(Meters));
+        inputs.driveVelocity = MetersPerSecond.of(driveMotor.getVelocity().getValue().in(RadiansPerSecond) * DriveConstants.wheelRadius.in(Meters));
+        inputs.driveAcceleration = MetersPerSecondPerSecond.of(driveMotor.getAcceleration().getValue().in(RadiansPerSecondPerSecond) * DriveConstants.wheelRadius.in(Meters));
 
-        inputs.driveDistance = getDistance();
-        inputs.driveVelocity = getDriveVelocity();
-        inputs.driveAcceleration = getDriveAcceleration();
+        inputs.driveVoltage = driveMotor.getMotorVoltage().getValue();
+        inputs.steerVoltage = steerMotor.getMotorVoltage().getValue();
 
-        inputs.driveVoltage = getDriveVoltage();
-        inputs.steerVoltage = getSteerVoltage();
+        inputs.driveCurrent = driveMotor.getStatorCurrent().getValue();
+        inputs.steerCurrent = steerMotor.getStatorCurrent().getValue();
 
-        inputs.driveCurrent = getDriveCurrent();
-        inputs.steerCurrent = getSteerCurrent();
+        inputs.driveTemperature = driveMotor.getDeviceTemp().getValue();
+        inputs.steerTemperature = steerMotor.getDeviceTemp().getValue();
 
-        inputs.driveTemperature = getDriveTemperature();
-        inputs.steerTemperature = getSteerTemperature();
-
-        Logger.processInputs(String.format("/RealOutputs/Subsystems/Drivetrain/Module%d_TalonFX", moduleId), inputs);
+        inputs.modulePosition = new SwerveModulePosition(inputs.driveDistance, inputs.steerAngle);
+        inputs.moduleState = new SwerveModuleState(inputs.driveVelocity, inputs.steerAngle);
     }
 
     @Override
@@ -150,80 +135,5 @@ public class ModuleIOTalonFX implements ModuleIO {
     public void resetPosition(SwerveModulePosition position) {
         steerMotor.setPosition(position.angle.getMeasure());
         driveMotor.setPosition(Radians.of(position.distanceMeters / DriveConstants.wheelRadius.in(Meters)));
-    }
-
-    @Override
-    public SwerveModuleState getState() {
-        return new SwerveModuleState(getDriveVelocity(), getAngle());
-    }
-
-    @Override
-    public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(getDistance(), getAngle());
-    }
-
-    @Override
-    public Rotation2d getAbsoluteAngle() {
-        return new Rotation2d(absEncoder.getAbsolutePosition().getValue()).minus(Rotation2d.fromRotations(encoderOffset));
-    }
-
-    @Override
-    public Distance getDistance() {
-        return Meters.of(driveMotor.getPosition().getValue().in(Radians) * DriveConstants.wheelRadius.in(Meters));
-    }
-
-    @Override
-    public LinearVelocity getDriveVelocity() {
-        return MetersPerSecond.of(driveMotor.getVelocity().getValue().in(RadiansPerSecond) * DriveConstants.wheelRadius.in(Meters));
-    }
-
-    @Override
-    public LinearAcceleration getDriveAcceleration() {
-        return MetersPerSecondPerSecond.of(driveMotor.getAcceleration().getValue().in(RadiansPerSecondPerSecond) * DriveConstants.wheelRadius.in(Meters));
-    }
-
-    @Override
-    public Rotation2d getAngle() {
-        return new Rotation2d(steerMotor.getPosition().getValue());
-    }
-
-    @Override
-    public AngularVelocity getSteerVelocity() {
-        return steerMotor.getVelocity().getValue();
-    }
-
-    @Override
-    public AngularAcceleration getSteerAcceleration() {
-        return steerMotor.getAcceleration().getValue();
-    }
-
-    @Override
-    public Voltage getDriveVoltage() {
-        return driveMotor.getMotorVoltage().getValue();
-    }
-
-    @Override
-    public Voltage getSteerVoltage() {
-        return steerMotor.getMotorVoltage().getValue();
-    }
-
-    @Override
-    public Current getDriveCurrent() {
-        return driveMotor.getStatorCurrent().getValue();
-    }
-
-    @Override
-    public Current getSteerCurrent() {
-        return steerMotor.getStatorCurrent().getValue();
-    }
-
-    @Override
-    public Temperature getDriveTemperature() {
-        return driveMotor.getDeviceTemp().getValue();
-    }
-
-    @Override
-    public Temperature getSteerTemperature() {
-        return steerMotor.getDeviceTemp().getValue();
     }
 }

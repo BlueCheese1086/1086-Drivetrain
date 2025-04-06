@@ -18,9 +18,6 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ModuleIO {
     @AutoLog
     public class ModuleIOInputs {
-        SwerveModulePosition modulePosition = new SwerveModulePosition();
-        SwerveModuleState moduleState = new SwerveModuleState();
-
         Rotation2d steerAbsAngle = new Rotation2d();
 
         Rotation2d steerAngle = new Rotation2d();
@@ -39,33 +36,14 @@ public interface ModuleIO {
 
         Temperature driveTemperature = Celsius.zero();
         Temperature steerTemperature = Celsius.zero();
+
+        SwerveModulePosition modulePosition = new SwerveModulePosition();
+        SwerveModuleState moduleState = new SwerveModuleState();
     }
 
-    public void updateInputs();
+    public void updateInputs(ModuleIOInputs inputs);
 
     public void setState(SwerveModuleState state);
 
     public void resetPosition(SwerveModulePosition position);
-
-    public SwerveModuleState getState();
-    public SwerveModulePosition getPosition();
-
-    public Rotation2d getAbsoluteAngle();
-
-    public Rotation2d getAngle();
-    public AngularVelocity getSteerVelocity();
-    public AngularAcceleration getSteerAcceleration();
-
-    public Distance getDistance();
-    public LinearVelocity getDriveVelocity();
-    public LinearAcceleration getDriveAcceleration();
-
-    public Voltage getDriveVoltage();
-    public Voltage getSteerVoltage();
-
-    public Current getDriveCurrent();
-    public Current getSteerCurrent();
-
-    public Temperature getDriveTemperature();
-    public Temperature getSteerTemperature();
 }
