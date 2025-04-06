@@ -1,4 +1,4 @@
-package frc.robot.subsystems.drivetrain;
+package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -25,7 +25,7 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.subsystems.util.AdjustableValues;
+import frc.robot.util.AdjustableValues;
 
 import org.littletonrobotics.junction.Logger;
 

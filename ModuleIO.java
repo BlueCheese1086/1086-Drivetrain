@@ -1,4 +1,4 @@
-package frc.robot.subsystems.drivetrain;
+package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -44,6 +44,7 @@ public interface ModuleIO {
     public void updateInputs();
 
     public void setState(SwerveModuleState state);
+
     public void resetPosition(SwerveModulePosition position);
 
     public SwerveModuleState getState();

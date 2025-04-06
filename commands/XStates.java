@@ -1,7 +1,7 @@
-package frc.robot.subsystems.drivetrain.commands;
+package frc.robot.subsystems.drive.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.drivetrain.Drivetrain;
+import frc.robot.subsystems.drive.Drivetrain;
 
 public class XStates extends Command {
     private Drivetrain drivetrain;

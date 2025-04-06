@@ -1,8 +1,4 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
-package frc.robot.subsystems.drivetrain;
+package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -21,7 +17,6 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.Constants.RobotMap;
 
-/** Add your docs here. */
 public class DriveConstants {
     public static final Distance robotWidth = Inches.of(22.75);
     public static final Distance robotLength = Inches.of(22.75);
@@ -87,17 +82,17 @@ public class DriveConstants {
         new SwerveModuleState(0, Rotation2d.fromDegrees(-135))
     };
 
-    public static final double kPXControllerDefault = 7;
-    public static final double kIXControllerDefault = 0;
-    public static final double kDXControllerDefault = 0;
+    public static final double kPX = 7;
+    public static final double kIX = 0;
+    public static final double kDX = 0;
 
-    public static final double kPYControllerDefault = 7;
-    public static final double kIYControllerDefault = 0;
-    public static final double kDYControllerDefault = 0;
+    public static final double kPY = 7;
+    public static final double kIY = 0;
+    public static final double kDY = 0;
     
-    public static final double kPThetaControllerDefault = 15;
-    public static final double kIThetaControllerDefault = 0;
-    public static final double kDThetaControllerDefault = 0;
+    public static final double kPTheta = 15;
+    public static final double kITheta = 0;
+    public static final double kDTheta = 0;
 
     // Kraken X44 DCMotor instance
     public static final DCMotor krakenX44 = new DCMotor(12, 4.05, 275, 1.4, 788.54, 1);

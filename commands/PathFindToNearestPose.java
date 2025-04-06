@@ -1,39 +1,44 @@
-package frc.robot.subsystems.drivetrain.commands;
+package frc.robot.subsystems.drive.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.Poses;
-import frc.robot.subsystems.drivetrain.Drivetrain;
-import java.util.ArrayList;
+import frc.robot.subsystems.drive.Drivetrain;
+
+import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
 
-public class PathFindToRight extends Command {
+public class PathFindToNearestPose extends Command {
     private Drivetrain drivetrain;
-    private Pose2d endPose;
-    private Supplier<Boolean> override;
-    private List<Pose2d> rightPoses = new ArrayList<>();
+    private List<Pose2d> poses;
 
+    private Pose2d endPose;
     private int shouldEnds = 0;
 
     /**
-     * Creates a new PathfindToRight command.
-     * It pathfinds to the nearest rightmost tower on a reef.
+     * Creates a new {@link PathfindToNearestPose} command.
+     * It pathfinds to the nearest pose from a list of poses.
      * 
      * @param drivetrain The drivetrain subsystem to control.
-     * @param override A boolean supplier that allows the command to be overriden.
+     * @param poses The list of poses to select from.
      */
-    public PathFindToRight(Drivetrain drivetrain, Supplier<Boolean> override) {
+    public PathFindToNearestPose(Drivetrain drivetrain, List<Pose2d> poses) {
         this.drivetrain = drivetrain;
-        this.override = override;
+        this.poses = poses;
 
-        rightPoses.add(Poses.REEF_Side1Right);
-        rightPoses.add(Poses.REEF_Side2Right);
-        rightPoses.add(Poses.REEF_Side3Right);
-        rightPoses.add(Poses.REEF_Side4Right);
-        rightPoses.add(Poses.REEF_Side5Right);
-        rightPoses.add(Poses.REEF_Side6Right);
+        addRequirements(drivetrain);
+    }
+
+    /**
+     * Creates a new {@link PathfindToNearestPose} command.
+     * It pathfinds to the nearest pose from a list of poses.
+     * 
+     * @param drivetrain The drivetrain subsystem to control.
+     * @param poses The list of poses to select from.
+     */
+    public PathFindToNearestPose(Drivetrain drivetrain, Pose2d... poses) {
+        this.drivetrain = drivetrain;
+        this.poses = Arrays.asList(poses);
 
         addRequirements(drivetrain);
     }
@@ -41,11 +46,11 @@ public class PathFindToRight extends Command {
     /**
      * Called when the command is initially scheduled.
      * 
-     * It updates the end pose when the command is initialized to prevent the goalPose from changing during pathfinding
+     * It updates the end pose when the command is initialized to prevent it from changing during pathfinding.
      */
     @Override
     public void initialize() {
-        endPose = drivetrain.getPose().nearest(rightPoses);
+        endPose = drivetrain.getPose().nearest(poses);
         shouldEnds = 0;
     }
 
@@ -71,12 +76,9 @@ public class PathFindToRight extends Command {
      * Returns true when the command should end.
      * 
      * It returns true when the current pose is within the set tolerance for 5 ticks in a row (0.1s).
-     * It will also return true if the override is active.
      */
     @Override
     public boolean isFinished() {
-        if (override.get()) return true;
-
         boolean shouldEnd = drivetrain.xController.atSetpoint() && drivetrain.yController.atSetpoint() && drivetrain.thetaController.atSetpoint();
 
         if (shouldEnd) {
