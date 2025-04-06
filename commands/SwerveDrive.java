@@ -11,10 +11,11 @@ public class SwerveDrive extends Command {
     private Supplier<Double> xSpeedSupplier;
     private Supplier<Double> ySpeedSupplier;
     private Supplier<Double> zSteerSupplier;
+    private Supplier<Double> percentSupplier;
     private Supplier<Boolean> fieldRelativeToggleSupplier;
-    private boolean fieldRelative = true;
     private Drivetrain drivetrain;
-    private double scalar = 1;
+
+    private boolean fieldRelative = true;
 
     /**
      * Creates a new SwerveDrive command.
@@ -24,20 +25,19 @@ public class SwerveDrive extends Command {
      * @param xSpeedSupplier The supplier for the percent x speed of the robot [-1,1].
      * @param ySpeedSupplier The supplier for the percent y speed of the robot [-1,1].
      * @param zSteerSupplier The supplier for the percent steer speed of the robot [-1,1].
+     * @param percentSupplier The supplier for the max percent input. [-1,1]
+     * @param toggleFieldRelative The supplier for whether or not to use field relative speeds.
      */
-    public SwerveDrive(Drivetrain drivetrain, Supplier<Double> xSpeedSupplier, Supplier<Double> ySpeedSupplier, Supplier<Double> zSteerSupplier, Supplier<Boolean> toggleFieldRelative) {
+    public SwerveDrive(Drivetrain drivetrain, Supplier<Double> xSpeedSupplier, Supplier<Double> ySpeedSupplier, Supplier<Double> zSteerSupplier, Supplier<Double> percentSupplier, Supplier<Boolean> toggleFieldRelative) {
         this.drivetrain = drivetrain;
         this.xSpeedSupplier = xSpeedSupplier;
         this.ySpeedSupplier = ySpeedSupplier;
         this.zSteerSupplier = zSteerSupplier;
+        this.percentSupplier = percentSupplier;
         this.fieldRelativeToggleSupplier = toggleFieldRelative;
         
         addRequirements(drivetrain);
     }
-
-    /** Called when the command is initially scheduled. */
-    @Override
-    public void initialize() {}
 
     /**
      * Called every time the scheduler runs while the command is scheduled.
@@ -77,29 +77,19 @@ public class SwerveDrive extends Command {
         
         if (fieldRelative) {
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                DriveConstants.maxLinearVelocity.times(-ySpeed * scalar),
-                DriveConstants.maxLinearVelocity.times(-xSpeed * scalar),
-                DriveConstants.maxAngularVelocity.times(-zSteer * scalar),
+                DriveConstants.maxLinearVelocity.times(-ySpeed * percentSupplier.get()),
+                DriveConstants.maxLinearVelocity.times(-xSpeed * percentSupplier.get()),
+                DriveConstants.maxAngularVelocity.times(-zSteer * percentSupplier.get()),
                 drivetrain.getHeading());
         } else {
             speeds = new ChassisSpeeds(
-                DriveConstants.maxLinearVelocity.times(-ySpeed * scalar),
-                DriveConstants.maxLinearVelocity.times(-xSpeed * scalar),
-                DriveConstants.maxAngularVelocity.times(-zSteer * scalar));
+                DriveConstants.maxLinearVelocity.times(-ySpeed * percentSupplier.get()),
+                DriveConstants.maxLinearVelocity.times(-xSpeed * percentSupplier.get()),
+                DriveConstants.maxAngularVelocity.times(-zSteer * percentSupplier.get()));
         }
 
         // Driving the robot
         drivetrain.drive(speeds);
-    }
-
-    /** Returns true when the command should end. */
-    @Override
-    public boolean isFinished() {
-        return false;
-    }
-
-    public void setScalar(double scalar) {
-        this.scalar = MathUtil.clamp(scalar, -1, 1);
     }
 
     /** Called once the command ends or is interrupted. */
