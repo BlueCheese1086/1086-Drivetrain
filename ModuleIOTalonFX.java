@@ -25,8 +25,8 @@ public class ModuleIOTalonFX implements ModuleIO {
     private CANcoder absEncoder;
 
     // Control Modes
-    private PositionVoltage steerControl;
-    private VelocityVoltage driveControl;
+    private PositionVoltage steerControl = new PositionVoltage(0).withSlot(0);
+    private VelocityVoltage driveControl = new VelocityVoltage(0).withSlot(0);
 
     private double encoderOffset;
 
@@ -127,8 +127,8 @@ public class ModuleIOTalonFX implements ModuleIO {
 
     @Override
     public void setState(SwerveModuleState state) {
-        driveMotor.setControl(new VelocityVoltage(RadiansPerSecond.of(state.speedMetersPerSecond / DriveConstants.wheelRadius.in(Meters))));
-        steerMotor.setControl(new PositionVoltage(state.angle.getMeasure()));
+        driveMotor.setControl(driveControl.withVelocity(state.speedMetersPerSecond / 2 / Math.PI / DriveConstants.wheelRadius.in(Meters)));
+        steerMotor.setControl(steerControl.withPosition(state.angle.getMeasure()));
     }
 
     @Override
