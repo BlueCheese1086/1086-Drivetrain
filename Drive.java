@@ -45,7 +45,6 @@ import frc.robot.subsystems.gyro.Gyro;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.util.VisionResult;
 import frc.robot.util.AdjustableValues;
-import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -177,7 +176,7 @@ public class Drive extends SubsystemBase {
             }
 
             // Update gyro angle
-            if (!Objects.isNull(gyro) && gyro.isConnected()) {
+            if (gyro.isConnected()) {
                 gyroDisconnectedAlert.set(false);
                 
                 // Use the real gyro angle
