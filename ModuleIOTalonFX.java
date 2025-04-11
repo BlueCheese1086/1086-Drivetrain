@@ -85,7 +85,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         // Updating PID values
 
         // What does refresh do vs apply?
-        // driveMotor.getConfigurator().refresh(null)
+        // driveMotor.getConfigurator().refresh(null);
         Slot0Configs drivePIDConfig = new Slot0Configs();
         if (AdjustableValues.hasChanged("Drive_kP_" + moduleId)) drivePIDConfig.kP = AdjustableValues.getNumber("Drive_kP_" + moduleId);
         if (AdjustableValues.hasChanged("Drive_kI_" + moduleId)) drivePIDConfig.kI = AdjustableValues.getNumber("Drive_kI_" + moduleId);
