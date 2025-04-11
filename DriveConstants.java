@@ -35,11 +35,11 @@ public class DriveConstants {
     public static final Current driveCurrentLimit = Amps.of(60);
     public static final Current steerCurrentLimit = Amps.of(30);
 
-    public static final double kPDriveDefault = RobotBase.isReal() ? 1       : 0.3;
-    public static final double kIDriveDefault = RobotBase.isReal() ? 0       : 0;
-    public static final double kDDriveDefault = RobotBase.isReal() ? 0       : 0.01;
-    public static final double kSDriveDefault = RobotBase.isReal() ? 0.06241 : 0;
-    public static final double kVDriveDefault = RobotBase.isReal() ? 0.30278 : 0;
+    public static final double kPDriveDefault = RobotBase.isReal() ? 1       : 0.5;
+    public static final double kIDriveDefault = RobotBase.isReal() ? 0       : 0.0;
+    public static final double kDDriveDefault = RobotBase.isReal() ? 0       : 0.0;
+    public static final double kSDriveDefault = RobotBase.isReal() ? 0.06241 : 1.5;
+    public static final double kVDriveDefault = RobotBase.isReal() ? 0.30278 : 0.08;
 
     public static final double kPSteerDefault = RobotBase.isReal() ? 1    : 5;
     public static final double kISteerDefault = RobotBase.isReal() ? 0    : 0;
