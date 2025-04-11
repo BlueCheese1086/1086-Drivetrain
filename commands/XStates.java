@@ -7,8 +7,10 @@ public class XStates extends Command {
     private Drivetrain drivetrain;
 
     /**
-     * Creates a new XStates command.
+     * Creates a new {@link XStates} command.
      * It sets the states of the robot to an "X" pattern to resist movement.
+     * 
+     * @param drivetrain The {@link Drivetrain} to control.
      */
     public XStates(Drivetrain drivetrain) {
         this.drivetrain = drivetrain;
