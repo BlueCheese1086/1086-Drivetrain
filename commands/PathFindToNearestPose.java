@@ -3,14 +3,14 @@ package frc.robot.subsystems.drive.commands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.drive.Drivetrain;
+import frc.robot.subsystems.drive.Drive;
 import java.util.Arrays;
 import java.util.List;
 
 import org.littletonrobotics.junction.Logger;
 
 public class PathFindToNearestPose extends Command {
-    private Drivetrain drivetrain;
+    private Drive drivetrain;
     private List<Pose2d> poses;
 
     private Pose2d endPose;
@@ -20,10 +20,10 @@ public class PathFindToNearestPose extends Command {
      * Creates a new {@link PathfindToNearestPose} command.
      * It pathfinds to the nearest pose from a list of poses.
      * 
-     * @param drivetrain The {@link Drivetrain} subsystem to control.
+     * @param drivetrain The {@link Drive} subsystem to control.
      * @param poses The list of poses to select from.
      */
-    public PathFindToNearestPose(Drivetrain drivetrain, Pose2d... poses) {
+    public PathFindToNearestPose(Drive drivetrain, Pose2d... poses) {
         this(drivetrain, Arrays.asList(poses));
     }
 
@@ -31,10 +31,10 @@ public class PathFindToNearestPose extends Command {
      * Creates a new {@link PathfindToNearestPose} command.
      * It pathfinds to the nearest pose from a list of poses.
      * 
-     * @param drivetrain The {@link Drivetrain} subsystem to control.
+     * @param drivetrain The {@link Drive} subsystem to control.
      * @param poses The list of poses to select from.
      */
-    public PathFindToNearestPose(Drivetrain drivetrain, List<Pose2d> poses) {
+    public PathFindToNearestPose(Drive drivetrain, List<Pose2d> poses) {
         this.drivetrain = drivetrain;
         this.poses = poses;
 

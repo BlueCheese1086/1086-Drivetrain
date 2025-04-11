@@ -3,7 +3,7 @@ package frc.robot.subsystems.drive.commands;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.DriveConstants;
-import frc.robot.subsystems.drive.Drivetrain;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.MathUtils;
 import java.util.function.Supplier;
 
@@ -13,7 +13,7 @@ public class SwerveDrive extends Command {
     private Supplier<Double> zSteerSupplier;
     private Supplier<Double> percentSupplier;
     private Supplier<Boolean> fieldRelativeToggleSupplier;
-    private Drivetrain drivetrain;
+    private Drive drivetrain;
 
     // Defaulting to field relative control
     private boolean fieldRelative = true;
@@ -23,14 +23,14 @@ public class SwerveDrive extends Command {
      * Creates a new {@link SwerveDrive} command.
      * It drives the robot based on different percent inputs.
      * 
-     * @param drivetrain The {@link Drivetrain} subsystem to control.
+     * @param drivetrain The {@link Drive} subsystem to control.
      * @param xSpeedSupplier The double supplier for the percent x speed of the robot [-1,1].
      * @param ySpeedSupplier The double supplier for the percent y speed of the robot [-1,1].
      * @param zSteerSupplier The double supplier for the percent steer speed of the robot [-1,1].
      * @param percentSupplier The double supplier for the max percent input. [0,1]
      * @param toggleFieldRelative The boolean supplier for whether or not to use field relative speeds.
      */
-    public SwerveDrive(Drivetrain drivetrain, Supplier<Double> xSpeedSupplier, Supplier<Double> ySpeedSupplier, Supplier<Double> zSteerSupplier, Supplier<Double> percentSupplier, Supplier<Boolean> toggleFieldRelative) {
+    public SwerveDrive(Drive drivetrain, Supplier<Double> xSpeedSupplier, Supplier<Double> ySpeedSupplier, Supplier<Double> zSteerSupplier, Supplier<Double> percentSupplier, Supplier<Boolean> toggleFieldRelative) {
         this.drivetrain = drivetrain;
         this.xSpeedSupplier = xSpeedSupplier;
         this.ySpeedSupplier = ySpeedSupplier;

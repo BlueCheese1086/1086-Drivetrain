@@ -50,7 +50,7 @@ import frc.robot.subsystems.vision.util.VisionResult;
 import frc.robot.util.AdjustableValues;
 import org.littletonrobotics.junction.Logger;
 
-public class Drivetrain extends SubsystemBase {
+public class Drive extends SubsystemBase {
     private ModuleIO[] modules;
     private ModuleIOInputsAutoLogged[] moduleInputs;
     private SwerveModuleState[] states;
@@ -91,7 +91,7 @@ public class Drivetrain extends SubsystemBase {
      * @param vision The vision instance to get pose estimates from.
      * @param modules The module IOs to drive on.
     */
-    public Drivetrain(Gyro gyro, Vision vision, ModuleIO... modules) {
+    public Drive(Gyro gyro, Vision vision, ModuleIO... modules) {
         // SwerveDrivetrainConstants dConst = new SwerveDrivetrainConstants();
     
         // dConst.Pigeon2Configs = new Pigeon2Configuration();
