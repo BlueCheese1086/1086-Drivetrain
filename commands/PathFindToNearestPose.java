@@ -4,9 +4,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drivetrain;
-
 import java.util.Arrays;
 import java.util.List;
+
+import org.littletonrobotics.junction.Logger;
 
 public class PathFindToNearestPose extends Command {
     private Drivetrain drivetrain;
@@ -19,26 +20,23 @@ public class PathFindToNearestPose extends Command {
      * Creates a new {@link PathfindToNearestPose} command.
      * It pathfinds to the nearest pose from a list of poses.
      * 
-     * @param drivetrain The drivetrain subsystem to control.
+     * @param drivetrain The {@link Drivetrain} subsystem to control.
      * @param poses The list of poses to select from.
      */
-    public PathFindToNearestPose(Drivetrain drivetrain, List<Pose2d> poses) {
-        this.drivetrain = drivetrain;
-        this.poses = poses;
-
-        addRequirements(drivetrain);
+    public PathFindToNearestPose(Drivetrain drivetrain, Pose2d... poses) {
+        this(drivetrain, Arrays.asList(poses));
     }
 
     /**
      * Creates a new {@link PathfindToNearestPose} command.
      * It pathfinds to the nearest pose from a list of poses.
      * 
-     * @param drivetrain The drivetrain subsystem to control.
+     * @param drivetrain The {@link Drivetrain} subsystem to control.
      * @param poses The list of poses to select from.
      */
-    public PathFindToNearestPose(Drivetrain drivetrain, Pose2d... poses) {
+    public PathFindToNearestPose(Drivetrain drivetrain, List<Pose2d> poses) {
         this.drivetrain = drivetrain;
-        this.poses = Arrays.asList(poses);
+        this.poses = poses;
 
         addRequirements(drivetrain);
     }
@@ -51,6 +49,7 @@ public class PathFindToNearestPose extends Command {
     @Override
     public void initialize() {
         endPose = drivetrain.getPose().nearest(poses);
+        Logger.recordOutput("/Drive/PIDPose", endPose);
         shouldEnds = 0;
     }
 
@@ -75,7 +74,7 @@ public class PathFindToNearestPose extends Command {
     /**
      * Returns true when the command should end.
      * 
-     * It returns true when the current pose is within the set tolerance for 5 ticks in a row (0.1s).
+     * It returns true when the current pose is within the set tolerance for 5 ticks in a row (~0.1s).
      */
     @Override
     public boolean isFinished() {
