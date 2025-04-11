@@ -44,8 +44,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants;
-import frc.robot.Constants.RobotMap;
 import frc.robot.subsystems.gyro.Gyro;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.util.VisionResult;
@@ -84,7 +82,7 @@ public class Drivetrain extends SubsystemBase {
     private boolean headingLocked;
     private Rotation2d lockedAngle;
 
-    private Rotation2d estimatedHeading = new Rotation2d();
+    private Rotation2d heading = new Rotation2d();
 
     /**
      * Creates a new Drivetrain subsystem.
@@ -218,7 +216,7 @@ public class Drivetrain extends SubsystemBase {
 
         kinematics = new SwerveDriveKinematics(DriveConstants.translations);
 
-        poseEstimator = new SwerveDrivePoseEstimator(kinematics, getHeading(), positions, new Pose2d());
+        poseEstimator = new SwerveDrivePoseEstimator(kinematics, heading, positions, new Pose2d());
 
         // Configuring SysID
         new SysIdRoutine(new SysIdRoutine.Config(),
@@ -299,7 +297,10 @@ public class Drivetrain extends SubsystemBase {
             positions[i] = moduleInputs[i].modulePosition;
         }
 
-        if (gyro == null) {
+
+        if (gyro.isConnected()) {
+            heading = gyro.getHeading();
+        } else {
             SwerveModulePosition[] deltas = new SwerveModulePosition[4];
 
             for (int i = 0; i < 4; i++) {
@@ -308,10 +309,10 @@ public class Drivetrain extends SubsystemBase {
 
             Twist2d twist = kinematics.toTwist2d(deltas);
 
-            estimatedHeading = estimatedHeading.plus(new Rotation2d(twist.dtheta));
+            heading = heading.plus(new Rotation2d(twist.dtheta));
         }
 
-        poseEstimator.update(getHeading(), positions);
+        poseEstimator.update(heading, positions);
 
         for (VisionResult result : vision.getUnreadResults()) {
             poseEstimator.addVisionMeasurement(result.getPose2d(), result.getTimestamp());
@@ -337,14 +338,12 @@ public class Drivetrain extends SubsystemBase {
      * @param newPose The new pose to go to.
      */
     public void resetPose(Pose2d newPose) {
-        poseEstimator.resetPosition(getHeading(), positions, newPose);
+        poseEstimator.resetPosition(heading, positions, newPose);
     }
 
     /** Gets the current heading. */
     public Rotation2d getHeading() {
-        if (gyro == null) return estimatedHeading;
-
-        return new Rotation2d(gyro.getYaw());
+        return heading;
     }
 
     /** Gets the current wheel speeds. */
@@ -359,8 +358,8 @@ public class Drivetrain extends SubsystemBase {
      */
     public void drive(ChassisSpeeds speeds) {
         if (headingLocked) {
-            Rotation2d angle = (lockedAngle == null) ? getHeading() : lockedAngle;
-            speeds.omegaRadiansPerSecond = thetaController.calculate(getHeading().getRadians(), angle.getRadians());
+            Rotation2d angle = (lockedAngle == null) ? heading : lockedAngle;
+            speeds.omegaRadiansPerSecond = thetaController.calculate(heading.getRadians(), angle.getRadians());
         }
 
         speeds = ChassisSpeeds.discretize(speeds, 0.02);
@@ -419,7 +418,7 @@ public class Drivetrain extends SubsystemBase {
     
     /** Follows a choreo trajectory. */
     public void followTrajectory(SwerveSample sample) {
-        drive(ChassisSpeeds.fromFieldRelativeSpeeds(sample.getChassisSpeeds(), getHeading()));
+        drive(ChassisSpeeds.fromFieldRelativeSpeeds(sample.getChassisSpeeds(), heading));
     }
 
     /** Sets the states of each module to an "X" pattern. */
