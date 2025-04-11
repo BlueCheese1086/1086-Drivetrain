@@ -1,10 +1,10 @@
 package frc.robot.subsystems.drive.commands;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.Drivetrain;
+import frc.robot.util.MathUtils;
 import java.util.function.Supplier;
 
 public class SwerveDrive extends Command {
@@ -15,18 +15,20 @@ public class SwerveDrive extends Command {
     private Supplier<Boolean> fieldRelativeToggleSupplier;
     private Drivetrain drivetrain;
 
+    // Defaulting to field relative control
     private boolean fieldRelative = true;
+    private boolean lastToggleVal = false;
 
     /**
-     * Creates a new SwerveDrive command.
+     * Creates a new {@link SwerveDrive} command.
      * It drives the robot based on different percent inputs.
      * 
-     * @param drivetrain The drivetrain subsystem to control.
-     * @param xSpeedSupplier The supplier for the percent x speed of the robot [-1,1].
-     * @param ySpeedSupplier The supplier for the percent y speed of the robot [-1,1].
-     * @param zSteerSupplier The supplier for the percent steer speed of the robot [-1,1].
-     * @param percentSupplier The supplier for the max percent input. [-1,1]
-     * @param toggleFieldRelative The supplier for whether or not to use field relative speeds.
+     * @param drivetrain The {@link Drivetrain} subsystem to control.
+     * @param xSpeedSupplier The double supplier for the percent x speed of the robot [-1,1].
+     * @param ySpeedSupplier The double supplier for the percent y speed of the robot [-1,1].
+     * @param zSteerSupplier The double supplier for the percent steer speed of the robot [-1,1].
+     * @param percentSupplier The double supplier for the max percent input. [0,1]
+     * @param toggleFieldRelative The boolean supplier for whether or not to use field relative speeds.
      */
     public SwerveDrive(Drivetrain drivetrain, Supplier<Double> xSpeedSupplier, Supplier<Double> ySpeedSupplier, Supplier<Double> zSteerSupplier, Supplier<Double> percentSupplier, Supplier<Boolean> toggleFieldRelative) {
         this.drivetrain = drivetrain;
@@ -46,53 +48,33 @@ public class SwerveDrive extends Command {
      */
     @Override
     public void execute() {
-        if (fieldRelativeToggleSupplier.get()) {
+        // Only toggling field relative drive on the first tick that the toggle condition is true.
+        // Otherwise it would constantly switch between the two modes, confusing the robot.
+        boolean toggleVal = fieldRelativeToggleSupplier.get();
+        if (toggleVal && !lastToggleVal) {
             fieldRelative = !fieldRelative;
         }
 
+        lastToggleVal = toggleVal;
+
         // Getting values from the suppliers.
-        double xSpeed = xSpeedSupplier.get();
-        double ySpeed = ySpeedSupplier.get();
-        double zSteer = zSteerSupplier.get();
-
-        // Applying a deadband
-        xSpeed = MathUtil.applyDeadband(xSpeed, 0.1);
-        ySpeed = MathUtil.applyDeadband(ySpeed, 0.1);
-        zSteer = MathUtil.applyDeadband(zSteer, 0.1);
-
-        // When applying a deadband, you cannot go slower than the deadband zone.
-        // This code allows the robot to move within that "lost" zone.
-        // The problem with this is that it could prevent the robot from moving at its max speed.
-        // To prevent this, we stop dampening the speed at 90%.
-        if (xSpeed >  0.1 && xSpeed <  0.9) xSpeed -= 0.1;
-        if (ySpeed >  0.1 && ySpeed <  0.9) ySpeed -= 0.1;
-        if (zSteer >  0.1 && zSteer <  0.9) zSteer -= 0.1;
-
-        if (xSpeed < -0.1 && xSpeed > -0.9) xSpeed += 0.1;
-        if (ySpeed < -0.1 && ySpeed > -0.9) ySpeed += 0.1;
-        if (zSteer < -0.1 && zSteer > -0.9) zSteer += 0.1;
+        // Applying a deadband with an offset and then letting the normal values come through at an input of 0.9.
+        double xSpeed = MathUtils.applyDeadbandWithOffsets(xSpeedSupplier.get(), 0.1, 0.9);
+        double ySpeed = MathUtils.applyDeadbandWithOffsets(ySpeedSupplier.get(), 0.1, 0.9);
+        double zSteer = MathUtils.applyDeadbandWithOffsets(zSteerSupplier.get(), 0.1, 0.9);
 
         // Getting speeds
-        ChassisSpeeds speeds;
+        ChassisSpeeds speeds = new ChassisSpeeds(
+            DriveConstants.maxLinearVelocity.times(-xSpeed * percentSupplier.get()),
+            DriveConstants.maxLinearVelocity.times(-ySpeed * percentSupplier.get()),
+            DriveConstants.maxAngularVelocity.times(-zSteer * percentSupplier.get()));
         
+        // Checking whether to drive field relative or not.
         if (fieldRelative) {
-            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                DriveConstants.maxLinearVelocity.times(-ySpeed * percentSupplier.get()),
-                DriveConstants.maxLinearVelocity.times(-xSpeed * percentSupplier.get()),
-                DriveConstants.maxAngularVelocity.times(-zSteer * percentSupplier.get()),
-                drivetrain.getHeading());
-        } else {
-            speeds = new ChassisSpeeds(
-                DriveConstants.maxLinearVelocity.times(-ySpeed * percentSupplier.get()),
-                DriveConstants.maxLinearVelocity.times(-xSpeed * percentSupplier.get()),
-                DriveConstants.maxAngularVelocity.times(-zSteer * percentSupplier.get()));
+            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drivetrain.getPose().getRotation());
         }
 
         // Driving the robot
         drivetrain.drive(speeds);
     }
-
-    /** Called once the command ends or is interrupted. */
-    @Override
-    public void end(boolean interrupted) {}
 }
