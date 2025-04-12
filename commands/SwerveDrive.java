@@ -69,9 +69,9 @@ public class SwerveDrive extends Command {
 
         // Getting speeds
         ChassisSpeeds speeds = new ChassisSpeeds(
-            DriveConstants.maxLinearVelocity.times(-xSpeed),
-            DriveConstants.maxLinearVelocity.times(-ySpeed),
-            DriveConstants.maxAngularVelocity.times(-zSteer));
+            -xSpeed * DriveConstants.maxLinearVelocity,
+            -ySpeed * DriveConstants.maxLinearVelocity,
+            -zSteer * DriveConstants.maxAngularVelocity);
         
         // Checking whether to drive field relative or not.
         if (fieldRelative) {

@@ -1,18 +1,8 @@
 package frc.robot.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.units.measure.AngularAcceleration;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.LinearAcceleration;
-import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Temperature;
-import edu.wpi.first.units.measure.Voltage;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ModuleIO {
@@ -21,21 +11,21 @@ public interface ModuleIO {
         Rotation2d steerAbsAngle = new Rotation2d();
 
         Rotation2d steerAngle = new Rotation2d();
-        AngularVelocity steerVelocity = RotationsPerSecond.zero();
-        AngularAcceleration steerAcceleration = RotationsPerSecondPerSecond.zero();
+        double steerVelocity = 0; // Radians / Second
+        double steerAcceleration = 0; // Radians / Second^2
 
-        Distance driveDistance = Meters.zero();
-        LinearVelocity driveVelocity = MetersPerSecond.zero();
-        LinearAcceleration driveAcceleration = MetersPerSecondPerSecond.zero();
+        double driveDistance = 0; // Meters
+        double driveVelocity = 0; // Meters / Second
+        double driveAcceleration = 0; // Meters / Second^2
 
-        Voltage driveVoltage = Volts.zero();
-        Voltage steerVoltage = Volts.zero();
+        double driveVoltage = 0; // Volts
+        double steerVoltage = 0; // Volts
 
-        Current driveCurrent = Amps.zero();
-        Current steerCurrent = Amps.zero();
+        double driveCurrent = 0; // Amps
+        double steerCurrent = 0; // Amps
 
-        Temperature driveTemperature = Celsius.zero();
-        Temperature steerTemperature = Celsius.zero();
+        double driveTemperature = 0; // Celsius
+        double steerTemperature = 0; // Celsius
 
         SwerveModulePosition modulePosition = new SwerveModulePosition();
         SwerveModuleState moduleState = new SwerveModuleState();

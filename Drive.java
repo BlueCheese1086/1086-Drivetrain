@@ -258,11 +258,11 @@ public class Drive extends SubsystemBase {
     public void sysIdLog(SysIdRoutineLog log) {
         for (int i = 0; i < modules.length; i++) {
             log.motor("Module" + i + "_Drive")
-                .current(moduleInputs[i].driveCurrent)
-                .voltage(moduleInputs[i].driveVoltage)
-                .linearAcceleration(moduleInputs[i].driveAcceleration)
-                .linearVelocity(moduleInputs[i].driveVelocity)
-                .linearPosition(moduleInputs[i].driveDistance);
+                .current(Amps.of(moduleInputs[i].driveCurrent))
+                .voltage(Volts.of(moduleInputs[i].driveVoltage))
+                .linearAcceleration(MetersPerSecondPerSecond.of(moduleInputs[i].driveAcceleration))
+                .linearVelocity(MetersPerSecond.of(moduleInputs[i].driveVelocity))
+                .linearPosition(Meters.of(moduleInputs[i].driveDistance));
         }
     }
 

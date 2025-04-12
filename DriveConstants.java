@@ -1,44 +1,35 @@
 package frc.robot.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.AngularAcceleration;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.LinearAcceleration;
-import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Mass;
-import edu.wpi.first.units.measure.MomentOfInertia;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.Constants.RobotMap;
 
 public class DriveConstants {
-    public static final Distance robotWidth = Inches.of(22.75);
-    public static final Distance robotLength = Inches.of(22.75);
+    public static final double robotWidth = Units.inchesToMeters(22.75); // Meters
+    public static final double robotLength = Units.inchesToMeters(22.75); // Meters
 
     public static final double driveXPercent = 1;
     public static final double driveYPercent = 1;
     public static final double steerPercent = 1;
     public static final double precisionPercent = 0.2;
 
-    public static final LinearVelocity maxLinearVelocity = MetersPerSecond.of(4.73);
-    public static final LinearAcceleration maxLinearAcceleration = MetersPerSecondPerSecond.of(3);
+    public static final double maxLinearVelocity = 4.73; // Meters / Second
+    public static final double maxLinearAcceleration = 3; // Meters / Second^2
 
-    public static final AngularVelocity maxAngularVelocity = RadiansPerSecond.of(3 * Math.PI);
-    public static final AngularAcceleration maxAngularAcceleration = RadiansPerSecondPerSecond.of(Math.PI);
+    public static final double maxAngularVelocity = 3 * Math.PI; // Radians / Second
+    public static final double maxAngularAcceleration = Math.PI; // Radians / Second^2
 
-    public static final Mass robotMass = Kilograms.of(50);
-    public static final MomentOfInertia robotMOI = KilogramSquareMeters.of(6.8);
+    public static final double robotMass = 50; // Kilograms
+    public static final double robotMOI = 6.8; // Kilograms^2 * Meters
 
-    public static final Distance wheelRadius = Inches.of(1.931);
+    public static final double wheelRadius = Units.inchesToMeters(1.931); // Meters
 
-    public static final Current driveCurrentLimit = Amps.of(60);
-    public static final Current steerCurrentLimit = Amps.of(30);
+    public static final double driveCurrentLimit = 60; // Amps
+    public static final double steerCurrentLimit = 30; // Amps
 
     public static final double kPDriveDefault = RobotBase.isReal() ? 1       : 0.5;
     public static final double kIDriveDefault = RobotBase.isReal() ? 0       : 0.0;
@@ -55,13 +46,13 @@ public class DriveConstants {
     public static final double driveGearRatio = 5.14;
     public static final double steerGearRatio = 12.8;
 
-    public static final double driveMOI = 0.025;
-    public static final double steerMOI = 0.004;
+    public static final double driveMOI = 0.025; // Kilograms^2 * Meters
+    public static final double steerMOI = 0.004; // Kilograms^2 * Meters
 
-    public static final Translation2d flModuleOffset = new Translation2d(robotWidth.div( 2), robotLength.div( 2));
-    public static final Translation2d frModuleOffset = new Translation2d(robotWidth.div( 2), robotLength.div(-2));
-    public static final Translation2d blModuleOffset = new Translation2d(robotWidth.div(-2), robotLength.div( 2));
-    public static final Translation2d brModuleOffset = new Translation2d(robotWidth.div(-2), robotLength.div(-2));
+    public static final Translation2d flModuleOffset = new Translation2d( robotWidth / 2,  robotLength / 2);
+    public static final Translation2d frModuleOffset = new Translation2d( robotWidth / 2, -robotLength / 2);
+    public static final Translation2d blModuleOffset = new Translation2d(-robotWidth / 2,  robotLength / 2);
+    public static final Translation2d brModuleOffset = new Translation2d(-robotWidth / 2, -robotLength / 2);
 
     public static final double flEncoderOffset = 0.566894531; // Rotations
     public static final double frEncoderOffset = 0.388427734; // Rotations
@@ -79,10 +70,10 @@ public class DriveConstants {
     };
 
     public static final SwerveModuleState[] xStates = {
-        new SwerveModuleState(0, Rotation2d.fromDegrees(-135)),
-        new SwerveModuleState(0, Rotation2d.fromDegrees( 135)),
-        new SwerveModuleState(0, Rotation2d.fromDegrees( 135)),
-        new SwerveModuleState(0, Rotation2d.fromDegrees(-135))
+        new SwerveModuleState(0, Rotation2d.fromDegrees(-135)), // FL
+        new SwerveModuleState(0, Rotation2d.fromDegrees( 135)), // FR
+        new SwerveModuleState(0, Rotation2d.fromDegrees( 135)), // BL
+        new SwerveModuleState(0, Rotation2d.fromDegrees(-135))  // BR
     };
 
     public static final double kPX = 7;
@@ -97,6 +88,6 @@ public class DriveConstants {
     public static final double kITheta = 0;
     public static final double kDTheta = 0;
 
-    // Kraken X44 DCMotor instance
+    // Kraken X44 DCMotor instance.  Values are from their documentation.
     public static final DCMotor krakenX44 = new DCMotor(12, 4.05, 275, 1.4, 788.54, 1);
 }

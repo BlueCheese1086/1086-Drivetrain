@@ -1,7 +1,5 @@
 package frc.robot.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -72,7 +70,7 @@ public class ModuleIOSim implements ModuleIO {
         Logger.recordOutput("/Drive/PIDS/Steer_kV", steerFFController.getKv());
 
         double driveVolts = driveController.calculate(driveMotor.getAngularVelocityRadPerSec()) + driveFFController.calculate(driveController.getSetpoint());
-        double steerVolts = steerController.calculate(steerMotor.getAngularPositionRad()) + steerFFController.calculate((steerController.getSetpoint() - steerMotor.getAngularPosition().in(Radians)) / 0.02);
+        double steerVolts = steerController.calculate(steerMotor.getAngularPositionRad()) + steerFFController.calculate((steerController.getSetpoint() - steerMotor.getAngularPositionRad()) / 0.02);
 
         driveMotor.setInputVoltage(driveVolts);
         steerMotor.setInputVoltage(steerVolts);
@@ -83,18 +81,18 @@ public class ModuleIOSim implements ModuleIO {
         inputs.steerAbsAngle = new Rotation2d(steerMotor.getAngularPosition());
 
         inputs.steerAngle = new Rotation2d(steerMotor.getAngularPosition());
-        inputs.steerVelocity = steerMotor.getAngularVelocity();
-        inputs.steerAcceleration = steerMotor.getAngularAcceleration();
+        inputs.steerVelocity = steerMotor.getAngularVelocityRadPerSec();
+        inputs.steerAcceleration = steerMotor.getAngularAccelerationRadPerSecSq();
 
-        inputs.driveDistance = Meters.of(driveMotor.getAngularPositionRad() * DriveConstants.wheelRadius.in(Meters));
-        inputs.driveVelocity = MetersPerSecond.of(driveMotor.getAngularVelocityRadPerSec() * DriveConstants.wheelRadius.in(Meters));
-        inputs.driveAcceleration = MetersPerSecondPerSecond.of(driveMotor.getAngularAccelerationRadPerSecSq() * DriveConstants.wheelRadius.in(Meters));
+        inputs.driveDistance = driveMotor.getAngularPositionRad() * DriveConstants.wheelRadius;
+        inputs.driveVelocity = driveMotor.getAngularVelocityRadPerSec() * DriveConstants.wheelRadius;
+        inputs.driveAcceleration = driveMotor.getAngularAccelerationRadPerSecSq() * DriveConstants.wheelRadius;
 
-        inputs.driveVoltage = Volts.of(driveVolts);
-        inputs.steerVoltage = Volts.of(steerVolts);
+        inputs.driveVoltage = driveVolts;
+        inputs.steerVoltage = steerVolts;
 
-        inputs.driveCurrent = Amps.of(driveMotor.getCurrentDrawAmps());
-        inputs.steerCurrent = Amps.of(steerMotor.getCurrentDrawAmps());
+        inputs.driveCurrent = driveMotor.getCurrentDrawAmps();
+        inputs.steerCurrent = steerMotor.getCurrentDrawAmps();
 
         inputs.modulePosition = new SwerveModulePosition(inputs.driveDistance, inputs.steerAngle);
         inputs.moduleState = new SwerveModuleState(inputs.driveVelocity, inputs.steerAngle);
@@ -102,13 +100,13 @@ public class ModuleIOSim implements ModuleIO {
 
     @Override
     public void setState(SwerveModuleState state) {
-        driveController.setSetpoint(state.speedMetersPerSecond / DriveConstants.wheelRadius.in(Meters));
+        driveController.setSetpoint(state.speedMetersPerSecond / DriveConstants.wheelRadius);
         steerController.setSetpoint(state.angle.getRadians());
     }
 
     @Override
     public void resetPosition(SwerveModulePosition position) {
-        driveMotor.setAngle(position.distanceMeters / DriveConstants.wheelRadius.in(Meters));
+        driveMotor.setAngle(position.distanceMeters / DriveConstants.wheelRadius);
         steerMotor.setAngle(position.angle.getRadians());
     }
 }

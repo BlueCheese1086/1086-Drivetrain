@@ -1,7 +1,5 @@
 package frc.robot.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
-
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -46,7 +44,7 @@ public class ModuleIOTalonFX implements ModuleIO {
 
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
 
-        driveConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.driveCurrentLimit.in(Amps);
+        driveConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.driveCurrentLimit;
         driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         driveConfig.Feedback.SensorToMechanismRatio = DriveConstants.driveGearRatio;
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -59,7 +57,7 @@ public class ModuleIOTalonFX implements ModuleIO {
 
         TalonFXConfiguration steerConfig = new TalonFXConfiguration();
 
-        steerConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.steerCurrentLimit.in(Amps);
+        steerConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.steerCurrentLimit;
         steerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         steerConfig.Feedback.SensorToMechanismRatio = DriveConstants.steerGearRatio;
         // See if this works
@@ -77,7 +75,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         driveMotor.getConfigurator().apply(driveConfig);
         steerMotor.getConfigurator().apply(steerConfig);
 
-        steerMotor.setPosition(absEncoder.getAbsolutePosition().getValue().in(Rotations) - encoderOffset);
+        steerMotor.setPosition(absEncoder.getAbsolutePosition().getValueAsDouble() - encoderOffset);
     }
 
     @Override
@@ -105,21 +103,21 @@ public class ModuleIOTalonFX implements ModuleIO {
         inputs.steerAbsAngle = new Rotation2d(absEncoder.getAbsolutePosition().getValue()).minus(Rotation2d.fromRotations(encoderOffset));
 
         inputs.steerAngle = new Rotation2d(steerMotor.getPosition().getValue());
-        inputs.steerVelocity = steerMotor.getVelocity().getValue();
-        inputs.steerAcceleration = steerMotor.getAcceleration().getValue();
+        inputs.steerVelocity = steerMotor.getVelocity().getValueAsDouble() * 2 * Math.PI;
+        inputs.steerAcceleration = steerMotor.getAcceleration().getValueAsDouble() * 2 * Math.PI;
 
-        inputs.driveDistance = Meters.of(driveMotor.getPosition().getValue().in(Radians) * DriveConstants.wheelRadius.in(Meters));
-        inputs.driveVelocity = MetersPerSecond.of(driveMotor.getVelocity().getValue().in(RadiansPerSecond) * DriveConstants.wheelRadius.in(Meters));
-        inputs.driveAcceleration = MetersPerSecondPerSecond.of(driveMotor.getAcceleration().getValue().in(RadiansPerSecondPerSecond) * DriveConstants.wheelRadius.in(Meters));
+        inputs.driveDistance = driveMotor.getPosition().getValueAsDouble() * 2 * Math.PI * DriveConstants.wheelRadius;
+        inputs.driveVelocity = driveMotor.getVelocity().getValueAsDouble() * 2 * Math.PI * DriveConstants.wheelRadius;
+        inputs.driveAcceleration = driveMotor.getAcceleration().getValueAsDouble() * 2 * Math.PI * DriveConstants.wheelRadius;
 
-        inputs.driveVoltage = driveMotor.getMotorVoltage().getValue();
-        inputs.steerVoltage = steerMotor.getMotorVoltage().getValue();
+        inputs.driveVoltage = driveMotor.getMotorVoltage().getValueAsDouble();
+        inputs.steerVoltage = steerMotor.getMotorVoltage().getValueAsDouble();
 
-        inputs.driveCurrent = driveMotor.getStatorCurrent().getValue();
-        inputs.steerCurrent = steerMotor.getStatorCurrent().getValue();
+        inputs.driveCurrent = driveMotor.getStatorCurrent().getValueAsDouble();
+        inputs.steerCurrent = steerMotor.getStatorCurrent().getValueAsDouble();
 
-        inputs.driveTemperature = driveMotor.getDeviceTemp().getValue();
-        inputs.steerTemperature = steerMotor.getDeviceTemp().getValue();
+        inputs.driveTemperature = driveMotor.getDeviceTemp().getValueAsDouble();
+        inputs.steerTemperature = steerMotor.getDeviceTemp().getValueAsDouble();
 
         inputs.modulePosition = new SwerveModulePosition(inputs.driveDistance, inputs.steerAngle);
         inputs.moduleState = new SwerveModuleState(inputs.driveVelocity, inputs.steerAngle);
@@ -127,13 +125,13 @@ public class ModuleIOTalonFX implements ModuleIO {
 
     @Override
     public void setState(SwerveModuleState state) {
-        driveMotor.setControl(driveControl.withVelocity(state.speedMetersPerSecond / 2 / Math.PI / DriveConstants.wheelRadius.in(Meters)));
+        driveMotor.setControl(driveControl.withVelocity(state.speedMetersPerSecond / 2 / Math.PI / DriveConstants.wheelRadius));
         steerMotor.setControl(steerControl.withPosition(state.angle.getMeasure()));
     }
 
     @Override
     public void resetPosition(SwerveModulePosition position) {
         steerMotor.setPosition(position.angle.getMeasure());
-        driveMotor.setPosition(Radians.of(position.distanceMeters / DriveConstants.wheelRadius.in(Meters)));
+        driveMotor.setPosition(position.distanceMeters / 2 / Math.PI / DriveConstants.wheelRadius);
     }
 }
