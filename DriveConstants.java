@@ -21,6 +21,10 @@ public class DriveConstants {
     public static final Distance robotWidth = Inches.of(22.75);
     public static final Distance robotLength = Inches.of(22.75);
 
+    public static final double driveXPercent = 1;
+    public static final double driveYPercent = 1;
+    public static final double steerPercent = 1;
+
     public static final LinearVelocity maxLinearVelocity = MetersPerSecond.of(4.73);
     public static final LinearAcceleration maxLinearAcceleration = MetersPerSecondPerSecond.of(3);
 

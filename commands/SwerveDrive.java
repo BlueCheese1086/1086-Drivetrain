@@ -4,6 +4,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.util.AdjustableValues;
 import frc.robot.util.MathUtils;
 import java.util.function.Supplier;
 
@@ -11,7 +12,6 @@ public class SwerveDrive extends Command {
     private Supplier<Double> xSpeedSupplier;
     private Supplier<Double> ySpeedSupplier;
     private Supplier<Double> zSteerSupplier;
-    private Supplier<Double> percentSupplier;
     private Supplier<Boolean> fieldRelativeToggleSupplier;
     private Drive drivetrain;
 
@@ -30,12 +30,11 @@ public class SwerveDrive extends Command {
      * @param percentSupplier The double supplier for the max percent input. [0,1]
      * @param toggleFieldRelative The boolean supplier for whether or not to use field relative speeds.
      */
-    public SwerveDrive(Drive drivetrain, Supplier<Double> xSpeedSupplier, Supplier<Double> ySpeedSupplier, Supplier<Double> zSteerSupplier, Supplier<Double> percentSupplier, Supplier<Boolean> toggleFieldRelative) {
+    public SwerveDrive(Drive drivetrain, Supplier<Double> xSpeedSupplier, Supplier<Double> ySpeedSupplier, Supplier<Double> zSteerSupplier, Supplier<Boolean> toggleFieldRelative) {
         this.drivetrain = drivetrain;
         this.xSpeedSupplier = xSpeedSupplier;
         this.ySpeedSupplier = ySpeedSupplier;
         this.zSteerSupplier = zSteerSupplier;
-        this.percentSupplier = percentSupplier;
         this.fieldRelativeToggleSupplier = toggleFieldRelative;
         
         addRequirements(drivetrain);
@@ -63,11 +62,16 @@ public class SwerveDrive extends Command {
         double ySpeed = MathUtils.applyDeadbandWithOffsets(ySpeedSupplier.get(), 0.1, 0.9);
         double zSteer = MathUtils.applyDeadbandWithOffsets(zSteerSupplier.get(), 0.1, 0.9);
 
+        // Applying max speeds
+        xSpeed *= AdjustableValues.getNumber("DriveX_Percent");
+        ySpeed *= AdjustableValues.getNumber("DriveY_Percent");
+        zSteer *= AdjustableValues.getNumber("Steer_Percent");
+
         // Getting speeds
         ChassisSpeeds speeds = new ChassisSpeeds(
-            DriveConstants.maxLinearVelocity.times(-xSpeed * percentSupplier.get()),
-            DriveConstants.maxLinearVelocity.times(-ySpeed * percentSupplier.get()),
-            DriveConstants.maxAngularVelocity.times(-zSteer * percentSupplier.get()));
+            DriveConstants.maxLinearVelocity.times(-xSpeed),
+            DriveConstants.maxLinearVelocity.times(-ySpeed),
+            DriveConstants.maxAngularVelocity.times(-zSteer));
         
         // Checking whether to drive field relative or not.
         if (fieldRelative) {
