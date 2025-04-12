@@ -24,6 +24,7 @@ public class DriveConstants {
     public static final double driveXPercent = 1;
     public static final double driveYPercent = 1;
     public static final double steerPercent = 1;
+    public static final double precisionPercent = 0.2;
 
     public static final LinearVelocity maxLinearVelocity = MetersPerSecond.of(4.73);
     public static final LinearAcceleration maxLinearAcceleration = MetersPerSecondPerSecond.of(3);
