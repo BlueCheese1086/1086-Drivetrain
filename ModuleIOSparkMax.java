@@ -98,17 +98,17 @@ public class ModuleIOSparkMax implements ModuleIO {
         if (AdjustableValues.hasChanged("Drive_kP_" + moduleId)) drivePIDConfig.closedLoop.p(AdjustableValues.getNumber("Drive_kP_" + moduleId));
         if (AdjustableValues.hasChanged("Drive_kI_" + moduleId)) drivePIDConfig.closedLoop.i(AdjustableValues.getNumber("Drive_kI_" + moduleId));
         if (AdjustableValues.hasChanged("Drive_kD_" + moduleId)) drivePIDConfig.closedLoop.d(AdjustableValues.getNumber("Drive_kD_" + moduleId));
-        if (AdjustableValues.hasChanged("Drive_kS_" + moduleId))     driveFFController.setKs(AdjustableValues.getNumber("Drive_kS_" + moduleId));
-        if (AdjustableValues.hasChanged("Drive_kV_" + moduleId))     driveFFController.setKv(AdjustableValues.getNumber("Drive_kV_" + moduleId));
-        if (!drivePIDConfig.closedLoop.equals(new ClosedLoopConfig())) driveMotor.configure(drivePIDConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        if (AdjustableValues.hasChanged("Drive_kS_" + moduleId)) driveFFController.setKs(AdjustableValues.getNumber("Drive_kS_" + moduleId));
+        if (AdjustableValues.hasChanged("Drive_kV_" + moduleId)) driveFFController.setKv(AdjustableValues.getNumber("Drive_kV_" + moduleId));
+        if (!drivePIDConfig.closedLoop.flatten().equals(new ClosedLoopConfig().flatten())) driveMotor.configure(drivePIDConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
         SparkMaxConfig steerPIDConfig = new SparkMaxConfig();
         if (AdjustableValues.hasChanged("Steer_kP_" + moduleId)) steerPIDConfig.closedLoop.p(AdjustableValues.getNumber("Steer_kP_" + moduleId));
         if (AdjustableValues.hasChanged("Steer_kI_" + moduleId)) steerPIDConfig.closedLoop.i(AdjustableValues.getNumber("Steer_kI_" + moduleId));
         if (AdjustableValues.hasChanged("Steer_kD_" + moduleId)) steerPIDConfig.closedLoop.d(AdjustableValues.getNumber("Steer_kD_" + moduleId));
-        if (AdjustableValues.hasChanged("Steer_kS_" + moduleId))     steerFFController.setKs(AdjustableValues.getNumber("Steer_kS_" + moduleId));
-        if (AdjustableValues.hasChanged("Steer_kV_" + moduleId))     steerFFController.setKv(AdjustableValues.getNumber("Steer_kV_" + moduleId));
-        if (!steerPIDConfig.closedLoop.equals(new ClosedLoopConfig())) steerMotor.configure(steerPIDConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        if (AdjustableValues.hasChanged("Steer_kS_" + moduleId)) steerFFController.setKs(AdjustableValues.getNumber("Steer_kS_" + moduleId));
+        if (AdjustableValues.hasChanged("Steer_kV_" + moduleId)) steerFFController.setKv(AdjustableValues.getNumber("Steer_kV_" + moduleId));
+        if (!steerPIDConfig.closedLoop.flatten().equals(new ClosedLoopConfig().flatten())) steerMotor.configure(steerPIDConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
         inputs.steerAbsAngle = new Rotation2d(absEncoder.getAbsolutePosition().getValue()).minus(Rotation2d.fromRotations(encoderOffset));
 
