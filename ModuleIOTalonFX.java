@@ -6,7 +6,6 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -22,13 +21,10 @@ public class ModuleIOTalonFX implements ModuleIO {
     // Hardware
     private TalonFX driveMotor;
     private TalonFX steerMotor;
-    private CANcoder absEncoder;
 
     // Control Modes
     private PositionVoltage steerControl = new PositionVoltage(0).withSlot(0);
     private VelocityVoltage driveControl = new VelocityVoltage(0).withSlot(0);
-
-    private double encoderOffset;
 
     /**
      * Creates a new ModuleIO with TalonFX motors.
@@ -38,14 +34,10 @@ public class ModuleIOTalonFX implements ModuleIO {
     public ModuleIOTalonFX(int moduleId) {
         this.moduleId = moduleId;
 
-        absEncoder = new CANcoder((int) DriveConstants.moduleConfigs[moduleId][2]);
-        encoderOffset = DriveConstants.moduleConfigs[moduleId][3];
-
         driveMotor = new TalonFX((int) DriveConstants.moduleConfigs[moduleId][0]);
         steerMotor = new TalonFX((int) DriveConstants.moduleConfigs[moduleId][1]);
 
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
-
         driveConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.driveCurrentLimit.in(Amps);
         driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         driveConfig.Feedback.SensorToMechanismRatio = DriveConstants.driveGearRatio;
@@ -56,15 +48,17 @@ public class ModuleIOTalonFX implements ModuleIO {
         driveConfig.Slot0.kD = AdjustableValues.getNumber("Drive_kD_" + moduleId);
         driveConfig.Slot0.kS = AdjustableValues.getNumber("Drive_kS_" + moduleId);
         driveConfig.Slot0.kV = AdjustableValues.getNumber("Drive_kV_" + moduleId);
+        driveConfig.Voltage.PeakForwardVoltage = 12;
+        driveConfig.Voltage.PeakReverseVoltage = -12;
 
         TalonFXConfiguration steerConfig = new TalonFXConfiguration();
-
+        steerConfig.ClosedLoopGeneral.ContinuousWrap = true;
         steerConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.steerCurrentLimit.in(Amps);
         steerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        steerConfig.Feedback.FeedbackRemoteSensorID = (int) DriveConstants.moduleConfigs[moduleId][2];
+        steerConfig.Feedback.FeedbackRotorOffset = DriveConstants.moduleConfigs[moduleId][3];
+        steerConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
         steerConfig.Feedback.SensorToMechanismRatio = DriveConstants.steerGearRatio;
-        // See if this works
-        // steerConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
-        // steerConfig.Feedback.FeedbackRemoteSensorID = (int) DriveConstants.moduleConfigs[moduleId][2];
         steerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         steerConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         steerConfig.Slot0.kP = AdjustableValues.getNumber("Steer_kP_" + moduleId);
@@ -72,12 +66,11 @@ public class ModuleIOTalonFX implements ModuleIO {
         steerConfig.Slot0.kD = AdjustableValues.getNumber("Steer_kD_" + moduleId);
         steerConfig.Slot0.kS = AdjustableValues.getNumber("Steer_kS_" + moduleId);
         steerConfig.Slot0.kV = AdjustableValues.getNumber("Steer_kV_" + moduleId);
-        steerConfig.ClosedLoopGeneral.ContinuousWrap = true;
+        steerConfig.Voltage.PeakForwardVoltage = 12;
+        steerConfig.Voltage.PeakReverseVoltage = -12;
 
         driveMotor.getConfigurator().apply(driveConfig);
         steerMotor.getConfigurator().apply(steerConfig);
-
-        steerMotor.setPosition(absEncoder.getAbsolutePosition().getValue().in(Rotations) - encoderOffset);
     }
 
     @Override
@@ -101,8 +94,6 @@ public class ModuleIOTalonFX implements ModuleIO {
         if (AdjustableValues.hasChanged("Steer_kS_" + moduleId)) steerPIDConfig.kS = AdjustableValues.getNumber("Steer_kS_" + moduleId);
         if (AdjustableValues.hasChanged("Steer_kV_" + moduleId)) steerPIDConfig.kV = AdjustableValues.getNumber("Steer_kV_" + moduleId);
         if (!steerPIDConfig.equals(new Slot0Configs())) steerMotor.getConfigurator().refresh(steerPIDConfig);
-
-        inputs.steerAbsAngle = new Rotation2d(absEncoder.getAbsolutePosition().getValue()).minus(Rotation2d.fromRotations(encoderOffset));
 
         inputs.steerAngle = new Rotation2d(steerMotor.getPosition().getValue());
         inputs.steerVelocity = steerMotor.getVelocity().getValue();
