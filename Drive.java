@@ -1,27 +1,5 @@
 package frc.robot.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
-
-import com.ctre.phoenix.sensors.CANCoderConfiguration;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.configs.Pigeon2Configuration;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.DifferentialSensorSourceValue;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.GravityTypeValue;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerFeedbackType;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
-import com.ctre.phoenix6.swerve.SwerveDrivetrain;
-import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
-import com.ctre.phoenix6.swerve.SwerveModule;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
@@ -92,101 +70,6 @@ public class Drive extends SubsystemBase {
      * @param modules The module IOs to drive on.
     */
     public Drive(Gyro gyro, Vision vision, ModuleIO... modules) {
-        // SwerveDrivetrainConstants dConst = new SwerveDrivetrainConstants();
-    
-        // dConst.Pigeon2Configs = new Pigeon2Configuration();
-        // dConst.Pigeon2Id = RobotMap.GYRO_Pigeon2Id; // Same as default...  Should I leave it?
-        
-        // SwerveModuleConstants<TalonFXConfiguration,TalonFXConfiguration,CANcoderConfiguration> mConst = new SwerveModuleConstants<TalonFXConfiguration,TalonFXConfiguration,CANcoderConfiguration>();
-
-        // int moduleId = 0;
-        
-        // Slot0Configs driveSlot0 = new Slot0Configs();
-        // driveSlot0.kP = DriveConstants.kPDriveDefault;
-        // driveSlot0.kI = DriveConstants.kIDriveDefault;
-        // driveSlot0.kD = DriveConstants.kDDriveDefault;
-        // driveSlot0.kS = DriveConstants.kSDriveDefault;
-        // driveSlot0.kV = DriveConstants.kVDriveDefault;
-
-        // Slot0Configs steerSlot0 = new Slot0Configs();
-        // steerSlot0.kP = DriveConstants.kPSteerDefault;
-        // steerSlot0.kI = DriveConstants.kISteerDefault;
-        // steerSlot0.kD = DriveConstants.kDSteerDefault;
-        // steerSlot0.kS = DriveConstants.kSSteerDefault;
-        // steerSlot0.kV = DriveConstants.kVSteerDefault;
-
-        // TalonFXConfiguration driveConfig = new TalonFXConfiguration();
-        // driveConfig.Audio.AllowMusicDurDisable = false;
-        // driveConfig.Audio.BeepOnBoot = true;
-        // driveConfig.Audio.BeepOnConfig = true;
-        // driveConfig.ClosedLoopGeneral.ContinuousWrap = true;
-        // driveConfig.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = 0;
-        // driveConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0;
-        // driveConfig.CurrentLimits.StatorCurrentLimit = DriveConstants.driveCurrentLimit.in(Amps);
-        // driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-        // driveConfig.DifferentialConstants.PeakDifferentialDutyCycle = 1;
-        // driveConfig.DifferentialConstants.PeakDifferentialVoltage = 12;
-        // driveConfig.DifferentialSensors.DifferentialRemoteSensorID = (int) DriveConstants.moduleConfigs[moduleId][2];
-        // driveConfig.DifferentialSensors.DifferentialSensorSource = DifferentialSensorSourceValue.RemoteCANcoder;
-        // driveConfig.Feedback.FeedbackRemoteSensorID = (int) DriveConstants.moduleConfigs[moduleId][2];
-        // driveConfig.Feedback.FeedbackRotorOffset; // Not sure if this needs to be set... The offset will be set in the CANcoder config
-        // driveConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
-        // driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-        // driveConfig.MotorOutput.NeutralMode;
-        // driveConfig.MotorOutput.PeakForwardDutyCycle;
-        // driveConfig.MotorOutput.PeakReverseDutyCycle;
-        // driveConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod;
-        // driveConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod;
-        // driveConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable;
-        // driveConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold;
-        // driveConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable;
-        // driveConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold;
-        // driveConfig.Voltage.PeakForwardVoltage;
-        // driveConfig.Voltage.PeakReverseVoltage;
-        // driveConfig.Voltage.SupplyVoltageTimeConstant;
-
-        // TalonFXConfiguration steerConfig = new TalonFXConfiguration();
-        // CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
-
-        // mConst.CouplingGearRatio = 0; //?
-        // mConst.DriveFrictionVoltage = 0.25; //?
-        // mConst.DriveInertia = DriveConstants.driveMOI;
-        // mConst.DriveMotorClosedLoopOutput = ClosedLoopOutputType.Voltage;
-        // mConst.DriveMotorGains = driveSlot0;
-        // mConst.DriveMotorGearRatio = DriveConstants.driveGearRatio;
-        // mConst.DriveMotorId = (int) DriveConstants.moduleConfigs[moduleId][0];
-        // mConst.DriveMotorInitialConfigs = new TalonFXConfiguration(); //?
-        // mConst.DriveMotorInverted = true;
-        // mConst.DriveMotorType = DriveMotorArrangement.TalonFX_Integrated;
-        // mConst.EncoderId = (int) DriveConstants.moduleConfigs[moduleId][2];
-        // mConst.EncoderInitialConfigs = new CANcoderConfiguration(); //?
-        // mConst.EncoderInverted = false;
-        // mConst.EncoderOffset = DriveConstants.moduleConfigs[moduleId][3];
-        // mConst.FeedbackSource = SteerFeedbackType.RemoteCANcoder;
-        // mConst.LocationX = DriveConstants.flModuleOffset.getX();
-        // mConst.LocationY = DriveConstants.flModuleOffset.getY();
-        // mConst.SlipCurrent = 120; //?
-        // mConst.SpeedAt12Volts = DriveConstants.maxLinearVelocity.in(MetersPerSecond);
-        // mConst.SteerFrictionVoltage = 0.25; //?
-        // mConst.SteerInertia = DriveConstants.steerMOI;
-        // mConst.SteerMotorClosedLoopOutput = ClosedLoopOutputType.Voltage;
-        // mConst.SteerMotorGains = steerSlot0;
-        // mConst.SteerMotorGearRatio = DriveConstants.steerGearRatio;
-        // mConst.SteerMotorId = (int) DriveConstants.moduleConfigs[moduleId][1];
-        // mConst.SteerMotorInitialConfigs = new TalonFXConfiguration(); //?
-        // mConst.SteerMotorInverted = false;
-        // mConst.SteerMotorType = SteerMotorArrangement.TalonFX_Integrated;
-        // mConst.WheelRadius = DriveConstants.wheelRadius.in(Meters);
-
-
-
-        // SwerveDrivetrain<TalonFX,TalonFX,CANcoder> dt = new SwerveDrivetrain<TalonFX,TalonFX,CANcoder>(TalonFX::new, TalonFX::new, CANcoder::new, dConst, mConst);
-        // SwerveModule<TalonFX,TalonFX,CANcoder> module = new SwerveModule<TalonFX,TalonFX,CANcoder>(TalonFX::new, TalonFX::new, CANcoder::new, consts, "rio", 1, 0);
-
-
-        // END OF TESTING STUFF, REAL CODE NOW
-        System.out.println("Drivetrain initialized");
-
         xController.setTolerance(0.01);
         yController.setTolerance(0.01);
         thetaController.setTolerance(0.01);
@@ -274,17 +157,17 @@ public class Drive extends SubsystemBase {
      */
     @Override
     public void periodic() {
-        if (AdjustableValues.hasChanged("X_kP")) xController.setP(AdjustableValues.getNumber("X_kP"));
-        if (AdjustableValues.hasChanged("X_kI")) xController.setI(AdjustableValues.getNumber("X_kI"));
-        if (AdjustableValues.hasChanged("X_kD")) xController.setD(AdjustableValues.getNumber("X_kD"));
+        if (AdjustableValues.hasChanged("AutoAlignX_kP")) xController.setP(AdjustableValues.getNumber("AutoAlignX_kP"));
+        if (AdjustableValues.hasChanged("AutoAlignX_kI")) xController.setI(AdjustableValues.getNumber("AutoAlignX_kI"));
+        if (AdjustableValues.hasChanged("AutoAlignX_kD")) xController.setD(AdjustableValues.getNumber("AutoAlignX_kD"));
 
-        if (AdjustableValues.hasChanged("Y_kP")) yController.setP(AdjustableValues.getNumber("Y_kP"));
-        if (AdjustableValues.hasChanged("Y_kI")) yController.setI(AdjustableValues.getNumber("Y_kI"));
-        if (AdjustableValues.hasChanged("Y_kD")) yController.setD(AdjustableValues.getNumber("Y_kD"));
+        if (AdjustableValues.hasChanged("AutoAlignY_kP")) yController.setP(AdjustableValues.getNumber("AutoAlignY_kP"));
+        if (AdjustableValues.hasChanged("AutoAlignY_kI")) yController.setI(AdjustableValues.getNumber("AutoAlignY_kI"));
+        if (AdjustableValues.hasChanged("AutoAlignY_kD")) yController.setD(AdjustableValues.getNumber("AutoAlignY_kD"));
 
-        if (AdjustableValues.hasChanged("Theta_kP")) thetaController.setP(AdjustableValues.getNumber("Theta_kP"));
-        if (AdjustableValues.hasChanged("Theta_kI")) thetaController.setI(AdjustableValues.getNumber("Theta_kI"));
-        if (AdjustableValues.hasChanged("Theta_kD")) thetaController.setD(AdjustableValues.getNumber("Theta_kD"));
+        if (AdjustableValues.hasChanged("AutoAlignTheta_kP")) thetaController.setP(AdjustableValues.getNumber("AutoAlignTheta_kP"));
+        if (AdjustableValues.hasChanged("AutoAlignTheta_kI")) thetaController.setI(AdjustableValues.getNumber("AutoAlignTheta_kI"));
+        if (AdjustableValues.hasChanged("AutoAlignTheta_kD")) thetaController.setD(AdjustableValues.getNumber("AutoAlignTheta_kD"));
 
         SwerveModulePosition[] oldPositions = positions.clone();
 
