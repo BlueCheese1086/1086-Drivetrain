@@ -52,8 +52,8 @@ public class DriveConstants {
     public static final double kSSteerDefault = RobotBase.isReal() ? 0.1  : 0;
     public static final double kVSteerDefault = RobotBase.isReal() ? 2.66 : 0;
 
-    public static final double driveGearRatio = 4.67;
-    public static final double steerGearRatio = 25.9;
+    public static final double driveGearRatio = 5.14;
+    public static final double steerGearRatio = 12.8;
 
     public static final double driveMOI = 0.025;
     public static final double steerMOI = 0.004;
