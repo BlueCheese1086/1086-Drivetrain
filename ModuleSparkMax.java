@@ -18,9 +18,19 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructTopic;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Temperature;
+import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.util.AdjustableValues;
 
-public class ModuleIOSparkMax implements ModuleIO {
+public class ModuleSparkMax extends Module {
     private int moduleId;
 
     private SparkMax driveMotor;
@@ -37,14 +47,15 @@ public class ModuleIOSparkMax implements ModuleIO {
     private SimpleMotorFeedforward driveFFController;
     private SimpleMotorFeedforward steerFFController;
 
-    private ModuleIOInputs lastInputs;
+    private StructTopic<SwerveModulePosition> modulePositionTopic;
+    private StructTopic<SwerveModuleState> moduleStateTopic;
 
     /**
      * Creates a new ModuleIO with SparkMAX motors.
      * 
      * @param moduleId The module id used for logging and getting configs.
      */
-    public ModuleIOSparkMax(int moduleId) {
+    public ModuleSparkMax(int moduleId) {
         this.moduleId = moduleId;
 
         absEncoder = new CANcoder((int) DriveConstants.moduleConfigs[moduleId][2]);
@@ -72,8 +83,8 @@ public class ModuleIOSparkMax implements ModuleIO {
         steerConfig.closedLoop.d(AdjustableValues.getNumber("Steer_kD_" + moduleId), ClosedLoopSlot.kSlot0);
         steerConfig.closedLoop.positionWrappingEnabled(true);
         steerConfig.closedLoop.positionWrappingInputRange(-Math.PI, Math.PI);
-        steerConfig.encoder.positionConversionFactor(1.0 / DriveConstants.steerGearRatio);
-        steerConfig.encoder.velocityConversionFactor(1.0 / DriveConstants.steerGearRatio);
+        steerConfig.encoder.positionConversionFactor(2 * Math.PI / DriveConstants.steerGearRatio);
+        steerConfig.encoder.velocityConversionFactor(2 * Math.PI / DriveConstants.steerGearRatio / 60);
         steerConfig.inverted(false);
         steerConfig.idleMode(IdleMode.kCoast);
         steerConfig.smartCurrentLimit((int) DriveConstants.steerCurrentLimit.in(Amps));
@@ -89,11 +100,12 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveController = driveMotor.getClosedLoopController();
         steerController = steerMotor.getClosedLoopController();
 
-        lastInputs = new ModuleIOInputs();
+        modulePositionTopic = NetworkTableInstance.getDefault().getStructTopic("/Drive/Module" + moduleId + "/Position", SwerveModulePosition.struct);
+        moduleStateTopic = NetworkTableInstance.getDefault().getStructTopic("/Drive/Module" + moduleId + "/State", SwerveModuleState.struct);
     }
 
     @Override
-    public void updateInputs(ModuleIOInputs inputs) {
+    public void periodic() {
         SparkMaxConfig drivePIDConfig = new SparkMaxConfig();
         if (AdjustableValues.hasChanged("Drive_kP_" + moduleId)) drivePIDConfig.closedLoop.p(AdjustableValues.getNumber("Drive_kP_" + moduleId));
         if (AdjustableValues.hasChanged("Drive_kI_" + moduleId)) drivePIDConfig.closedLoop.i(AdjustableValues.getNumber("Drive_kI_" + moduleId));
@@ -110,35 +122,32 @@ public class ModuleIOSparkMax implements ModuleIO {
         if (AdjustableValues.hasChanged("Steer_kV_" + moduleId)) steerFFController.setKv(AdjustableValues.getNumber("Steer_kV_" + moduleId));
         if (!steerPIDConfig.closedLoop.flatten().equals(new ClosedLoopConfig().flatten())) steerMotor.configure(steerPIDConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
-        inputs.steerAbsAngle = new Rotation2d(absEncoder.getAbsolutePosition().getValue()).minus(Rotation2d.fromRotations(encoderOffset));
+        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerAbsPosition", getSteerAbsAngle().in(Degrees));
+        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerPosition/Actual", getSteerAngle().in(Degrees));
+        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerVelocity", getSteerVelocity().in(DegreesPerSecond));
+        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerAcceleration", getSteerAcceleration().in(DegreesPerSecondPerSecond));
 
-        inputs.steerAngle = Rotation2d.fromRotations(steerEncoder.getPosition());
-        inputs.steerVelocity = RPM.of(steerEncoder.getVelocity());
-        inputs.steerAcceleration = inputs.steerVelocity.minus(lastInputs.steerVelocity).div(Seconds.of(0.02));
+        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DrivePosition", getDrivePosition().in(Meters));
+        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DriveVelocity/Actual", getDriveVelocity().in(MetersPerSecond));
+        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DriveAcceleration", getDriveAcceleration().in(MetersPerSecondPerSecond));
 
-        inputs.driveDistance = Meters.of(driveEncoder.getPosition());
-        inputs.driveVelocity = MetersPerSecond.of(driveEncoder.getVelocity());
-        inputs.driveAcceleration = inputs.driveVelocity.minus(lastInputs.driveVelocity).div(Seconds.of(0.02));
+        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DriveVoltage", getSteerVoltage().in(Volts));
+        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerVoltage", getDriveVoltage().in(Volts));
 
-        inputs.driveVoltage = Volts.of(driveMotor.getAppliedOutput() * driveMotor.getBusVoltage());
-        inputs.steerVoltage = Volts.of(steerMotor.getAppliedOutput() * steerMotor.getBusVoltage());
+        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DriveCurrent", getDriveCurrent().in(Amps));
+        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerCurrent", getSteerCurrent().in(Amps));
 
-        inputs.driveCurrent = Amps.of(driveMotor.getOutputCurrent());
-        inputs.steerCurrent = Amps.of(steerMotor.getOutputCurrent());
+        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DriveTemperature", getDriveTemperature().in(Celsius));
+        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerTemperature", getSteerTemperature().in(Celsius));
 
-        inputs.driveTemperature = Celsius.of(driveMotor.getMotorTemperature());
-        inputs.steerTemperature = Celsius.of(steerMotor.getMotorTemperature());
-
-        inputs.modulePosition = new SwerveModulePosition(inputs.driveDistance, inputs.steerAngle);
-        inputs.moduleState = new SwerveModuleState(inputs.driveVelocity, inputs.steerAngle);
-
-        lastInputs = inputs;
+        modulePositionTopic.publish().set(getModulePosition());
+        moduleStateTopic.publish().set(getModuleState());
     }
 
     @Override
     public void setState(SwerveModuleState state) {
         double driveFFVolts = driveFFController.calculate(state.speedMetersPerSecond);
-        double steerFFVolts = steerFFController.calculate(state.angle.minus(lastInputs.steerAngle).getRotations() / 0.02);
+        double steerFFVolts = steerFFController.calculate((state.angle.getRotations() - getSteerAngle().in(Rotations)) / 0.02);
 
         driveController.setReference(state.speedMetersPerSecond, ControlType.kVelocity, ClosedLoopSlot.kSlot0, driveFFVolts);
         steerController.setReference(state.angle.getRotations(), ControlType.kPosition, ClosedLoopSlot.kSlot0, steerFFVolts);
@@ -148,5 +157,59 @@ public class ModuleIOSparkMax implements ModuleIO {
     public void resetPosition(SwerveModulePosition position) {
         driveEncoder.setPosition(position.distanceMeters);
         steerEncoder.setPosition(position.angle.getRotations());
+    }
+
+    @Override
+    public Angle getSteerAbsAngle() {
+        return absEncoder.getAbsolutePosition().getValue();
+    }
+
+    @Override
+    public Angle getSteerAngle() {
+        return Radians.of(steerEncoder.getPosition());
+    }
+
+    public AngularVelocity getSteerVelocity() {
+        return RadiansPerSecond.of(steerEncoder.getVelocity());
+    }
+
+    public Distance getDrivePosition() {
+        return Meters.of(driveEncoder.getPosition());
+    }
+
+    public LinearVelocity getDriveVelocity() {
+        return MetersPerSecond.of(driveEncoder.getVelocity());
+    }
+
+    public Voltage getDriveVoltage() {
+        return Volts.of(driveMotor.getBusVoltage() * driveMotor.getAppliedOutput());
+    }
+
+    public Voltage getSteerVoltage() {
+        return Volts.of(steerMotor.getBusVoltage() * steerMotor.getAppliedOutput());
+    }
+
+    public Current getDriveCurrent() {
+        return Amps.of(driveMotor.getOutputCurrent());
+    }
+
+    public Current getSteerCurrent() {
+        return Amps.of(steerMotor.getOutputCurrent());
+    }
+
+    public Temperature getDriveTemperature() {
+        return Celsius.of(driveMotor.getMotorTemperature());
+    }
+
+    public Temperature getSteerTemperature() {
+        return Celsius.of(steerMotor.getMotorTemperature());
+    }
+
+    public SwerveModulePosition getModulePosition() {
+        return new SwerveModulePosition(getDrivePosition(), new Rotation2d(getSteerAngle()));
+    }
+
+    public SwerveModuleState getModuleState() {
+        return new SwerveModuleState(getDriveVelocity(), new Rotation2d(getSteerAngle()));
     }
 }

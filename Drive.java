@@ -29,8 +29,7 @@ import frc.robot.util.AdjustableValues;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
-    private ModuleIO[] modules;
-    private ModuleIOInputsAutoLogged[] moduleInputs;
+    private Module[] modules;
     private SwerveModuleState[] states;
     private SwerveModulePosition[] positions;
 
@@ -69,7 +68,7 @@ public class Drive extends SubsystemBase {
      * @param vision The vision instance to get pose estimates from.
      * @param modules The module IOs to drive on.
     */
-    public Drive(Gyro gyro, Vision vision, ModuleIO... modules) {
+    public Drive(Gyro gyro, Vision vision, Module... modules) {
         xController.setTolerance(0.01);
         yController.setTolerance(0.01);
         thetaController.setTolerance(0.01);
@@ -79,14 +78,12 @@ public class Drive extends SubsystemBase {
         this.vision = vision;
 
         this.modules = modules;
-        this.moduleInputs = new ModuleIOInputsAutoLogged[modules.length];
         this.states = new SwerveModuleState[modules.length];
         this.positions = new SwerveModulePosition[modules.length];
 
         for (int i = 0; i < modules.length; i++) {
-            moduleInputs[i] = new ModuleIOInputsAutoLogged();
-            states[i] = moduleInputs[i].moduleState;
-            positions[i] = moduleInputs[i].modulePosition;
+            states[i] = modules[i].getModuleState();
+            positions[i] = modules[i].getModulePosition();
         }
 
         /*
@@ -141,11 +138,11 @@ public class Drive extends SubsystemBase {
     public void sysIdLog(SysIdRoutineLog log) {
         for (int i = 0; i < modules.length; i++) {
             log.motor("Module" + i + "_Drive")
-                .current(moduleInputs[i].driveCurrent)
-                .voltage(moduleInputs[i].driveVoltage)
-                .linearAcceleration(moduleInputs[i].driveAcceleration)
-                .linearVelocity(moduleInputs[i].driveVelocity)
-                .linearPosition(moduleInputs[i].driveDistance);
+                .current(modules[i].getDriveCurrent())
+                .voltage(modules[i].getDriveVoltage())
+                .linearAcceleration(modules[i].getDriveAcceleration())
+                .linearVelocity(modules[i].getDriveVelocity())
+                .linearPosition(modules[i].getDrivePosition());
         }
     }
 
@@ -171,13 +168,9 @@ public class Drive extends SubsystemBase {
 
         SwerveModulePosition[] oldPositions = positions.clone();
 
-        for (int i = 0; i < modules.length; i++) {
-            modules[i].updateInputs(moduleInputs[i]);
-
-            Logger.processInputs("/RealOutputs/Subsystems/Drivetrain/Module" + i, moduleInputs[i]);
-            
-            states[i] = moduleInputs[i].moduleState;
-            positions[i] = moduleInputs[i].modulePosition;
+        for (int i = 0; i < modules.length; i++) {            
+            states[i] = modules[i].getModuleState();
+            positions[i] = modules[i].getModulePosition();
         }
 
 
@@ -250,8 +243,8 @@ public class Drive extends SubsystemBase {
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, DriveConstants.maxLinearVelocity);
 
         for (int i = 0; i < modules.length; i++) {
-            desiredStates[i].optimize(moduleInputs[i].steerAngle);
-            desiredStates[i].cosineScale(moduleInputs[i].steerAngle);
+            desiredStates[i].optimize(new Rotation2d(modules[i].getSteerAngle()));
+            desiredStates[i].cosineScale(new Rotation2d(modules[i].getSteerAngle()));
 
             modules[i].setState(desiredStates[i]);
         }

@@ -13,9 +13,17 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.util.AdjustableValues;
 
-public class ModuleIOTalonFX implements ModuleIO {
+public class ModuleTalonFX extends Module {
     private int moduleId;
 
     // Hardware
@@ -31,7 +39,7 @@ public class ModuleIOTalonFX implements ModuleIO {
      * 
      * @param moduleId The module id used for logging and getting configs.
      */
-    public ModuleIOTalonFX(int moduleId) {
+    public ModuleTalonFX(int moduleId) {
         this.moduleId = moduleId;
 
         driveMotor = new TalonFX((int) DriveConstants.moduleConfigs[moduleId][0]);
@@ -74,7 +82,7 @@ public class ModuleIOTalonFX implements ModuleIO {
     }
 
     @Override
-    public void updateInputs(ModuleIOInputs inputs) {
+    public void periodic() {
         // Updating PID values
 
         // What does refresh do vs apply?
@@ -126,5 +134,59 @@ public class ModuleIOTalonFX implements ModuleIO {
     public void resetPosition(SwerveModulePosition position) {
         steerMotor.setPosition(position.angle.getMeasure());
         driveMotor.setPosition(Radians.of(position.distanceMeters / DriveConstants.wheelRadius.in(Meters)));
+    }
+
+    @Override
+    public Angle getSteerAbsAngle() {
+        return steerMotor.getAngularPosition();
+    }
+
+    @Override
+    public Angle getSteerAngle() {
+        return steerMotor.getAngularPosition();
+    }
+
+    public AngularVelocity getSteerVelocity() {
+        return steerMotor.getAngularVelocity();
+    }
+
+    public AngularAcceleration getSteerAcceleration() {
+        return steerMotor.getAngularAcceleration();
+    }
+
+    public Distance getDrivePosition() {
+        return Meters.of(driveMotor.getPosition().in(Radians) * DriveConstants.wheelRadius.in(Meters));
+    }
+
+    public LinearVelocity getDriveVelocity() {
+        return MetersPerSecond.of(driveMotor.getVelocity().getValue().in(RadiansPerSecond) * DriveConstants.wheelRadius.in(Meters));
+    }
+
+    public LinearAcceleration getDriveAcceleration() {
+        return MetersPerSecondPerSecond.of(driveMotor.getAcceleration().getValue().in(RadiansPerSecondPerSecond) * DriveConstants.wheelRadius.in(Meters));
+    }
+
+    public Voltage getDriveVoltage() {
+        return driveMotor.getMotorVoltage().getValue();
+    }
+
+    public Voltage getSteerVoltage() {
+        return steerMotor.getMotorVoltage().getValue();
+    }
+
+    public Current getDriveCurrent() {
+        return driveMotor.getStatorCurrent().getValue();
+    }
+
+    public Current getSteerCurrent() {
+        return steerMotor.getStatorCurrent().getValue();
+    }
+
+    public SwerveModulePosition getModulePosition() {
+        return new SwerveModulePosition(getDrivePosition(), new Rotation2d(getSteerAngle()));
+    }
+
+    public SwerveModuleState getModuleState() {
+        return new SwerveModuleState(getDriveVelocity(), new Rotation2d(getSteerAngle()));
     }
 }
