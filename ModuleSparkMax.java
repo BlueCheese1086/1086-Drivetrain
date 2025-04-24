@@ -1,3 +1,4 @@
+
 package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
@@ -52,7 +53,7 @@ public class ModuleSparkMax extends Module {
 
     /**
      * Creates a new ModuleIO with SparkMAX motors.
-     * 
+     *
      * @param moduleId The module id used for logging and getting configs.
      */
     public ModuleSparkMax(int moduleId) {
@@ -64,13 +65,13 @@ public class ModuleSparkMax extends Module {
         driveMotor = new SparkMax((int) DriveConstants.moduleConfigs[moduleId][0], MotorType.kBrushless);
         steerMotor = new SparkMax((int) DriveConstants.moduleConfigs[moduleId][1], MotorType.kBrushless);
 
-        driveFFController = new SimpleMotorFeedforward(AdjustableValues.getNumber("Drive_kS_" + moduleId), AdjustableValues.getNumber("Drive_kV_" + moduleId), 0, 0.02);
-        steerFFController = new SimpleMotorFeedforward(AdjustableValues.getNumber("Steer_kS_" + moduleId), AdjustableValues.getNumber("Steer_kV_" + moduleId), 0, 0.02);
+        driveFFController = new SimpleMotorFeedforward(0, 0, 0);//AdjustableValues.getNumber("Drive_kS_" + moduleId), AdjustableValues.getNumber("Drive_kV_" + moduleId), 0, 0.02);
+        steerFFController = new SimpleMotorFeedforward(0, 0, 0);//AdjustableValues.getNumber("Steer_kS_" + moduleId), AdjustableValues.getNumber("Steer_kV_" + moduleId), 0, 0.02);
 
         SparkMaxConfig driveConfig = new SparkMaxConfig();
-        driveConfig.closedLoop.p(AdjustableValues.getNumber("Drive_kP_" + moduleId), ClosedLoopSlot.kSlot0);
-        driveConfig.closedLoop.i(AdjustableValues.getNumber("Drive_kI_" + moduleId), ClosedLoopSlot.kSlot0);
-        driveConfig.closedLoop.d(AdjustableValues.getNumber("Drive_kD_" + moduleId), ClosedLoopSlot.kSlot0);
+        // driveConfig.closedLoop.p(AdjustableValues.getNumber("Drive_kP_" + moduleId), ClosedLoopSlot.kSlot0);
+        // driveConfig.closedLoop.i(AdjustableValues.getNumber("Drive_kI_" + moduleId), ClosedLoopSlot.kSlot0);
+        // driveConfig.closedLoop.d(AdjustableValues.getNumber("Drive_kD_" + moduleId), ClosedLoopSlot.kSlot0);
         driveConfig.encoder.positionConversionFactor(DriveConstants.wheelRadius.in(Meters) / DriveConstants.driveGearRatio);
         driveConfig.encoder.velocityConversionFactor(DriveConstants.wheelRadius.in(Meters) / DriveConstants.driveGearRatio / 60);
         driveConfig.inverted(false);
@@ -78,9 +79,9 @@ public class ModuleSparkMax extends Module {
         driveConfig.smartCurrentLimit((int) DriveConstants.driveCurrentLimit.in(Amps));
 
         SparkMaxConfig steerConfig = new SparkMaxConfig();
-        steerConfig.closedLoop.p(AdjustableValues.getNumber("Steer_kP_" + moduleId), ClosedLoopSlot.kSlot0);
-        steerConfig.closedLoop.i(AdjustableValues.getNumber("Steer_kI_" + moduleId), ClosedLoopSlot.kSlot0);
-        steerConfig.closedLoop.d(AdjustableValues.getNumber("Steer_kD_" + moduleId), ClosedLoopSlot.kSlot0);
+        // steerConfig.closedLoop.p(AdjustableValues.getNumber("Steer_kP_" + moduleId), ClosedLoopSlot.kSlot0);
+        // steerConfig.closedLoop.i(AdjustableValues.getNumber("Steer_kI_" + moduleId), ClosedLoopSlot.kSlot0);
+        // steerConfig.closedLoop.d(AdjustableValues.getNumber("Steer_kD_" + moduleId), ClosedLoopSlot.kSlot0);
         steerConfig.closedLoop.positionWrappingEnabled(true);
         steerConfig.closedLoop.positionWrappingInputRange(-Math.PI, Math.PI);
         steerConfig.encoder.positionConversionFactor(2 * Math.PI / DriveConstants.steerGearRatio);
@@ -106,21 +107,21 @@ public class ModuleSparkMax extends Module {
 
     @Override
     public void periodic() {
-        SparkMaxConfig drivePIDConfig = new SparkMaxConfig();
-        if (AdjustableValues.hasChanged("Drive_kP_" + moduleId)) drivePIDConfig.closedLoop.p(AdjustableValues.getNumber("Drive_kP_" + moduleId));
-        if (AdjustableValues.hasChanged("Drive_kI_" + moduleId)) drivePIDConfig.closedLoop.i(AdjustableValues.getNumber("Drive_kI_" + moduleId));
-        if (AdjustableValues.hasChanged("Drive_kD_" + moduleId)) drivePIDConfig.closedLoop.d(AdjustableValues.getNumber("Drive_kD_" + moduleId));
-        if (AdjustableValues.hasChanged("Drive_kS_" + moduleId)) driveFFController.setKs(AdjustableValues.getNumber("Drive_kS_" + moduleId));
-        if (AdjustableValues.hasChanged("Drive_kV_" + moduleId)) driveFFController.setKv(AdjustableValues.getNumber("Drive_kV_" + moduleId));
-        if (!drivePIDConfig.closedLoop.flatten().equals(new ClosedLoopConfig().flatten())) driveMotor.configure(drivePIDConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        // SparkMaxConfig drivePIDConfig = new SparkMaxConfig();
+        // if (AdjustableValues.hasChanged("Drive_kP_" + moduleId)) drivePIDConfig.closedLoop.p(AdjustableValues.getNumber("Drive_kP_" + moduleId));
+        // if (AdjustableValues.hasChanged("Drive_kI_" + moduleId)) drivePIDConfig.closedLoop.i(AdjustableValues.getNumber("Drive_kI_" + moduleId));
+        // if (AdjustableValues.hasChanged("Drive_kD_" + moduleId)) drivePIDConfig.closedLoop.d(AdjustableValues.getNumber("Drive_kD_" + moduleId));
+        // if (AdjustableValues.hasChanged("Drive_kS_" + moduleId)) driveFFController.setKs(AdjustableValues.getNumber("Drive_kS_" + moduleId));
+        // if (AdjustableValues.hasChanged("Drive_kV_" + moduleId)) driveFFController.setKv(AdjustableValues.getNumber("Drive_kV_" + moduleId));
+        // if (!drivePIDConfig.closedLoop.flatten().equals(new ClosedLoopConfig().flatten())) driveMotor.configure(drivePIDConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
-        SparkMaxConfig steerPIDConfig = new SparkMaxConfig();
-        if (AdjustableValues.hasChanged("Steer_kP_" + moduleId)) steerPIDConfig.closedLoop.p(AdjustableValues.getNumber("Steer_kP_" + moduleId));
-        if (AdjustableValues.hasChanged("Steer_kI_" + moduleId)) steerPIDConfig.closedLoop.i(AdjustableValues.getNumber("Steer_kI_" + moduleId));
-        if (AdjustableValues.hasChanged("Steer_kD_" + moduleId)) steerPIDConfig.closedLoop.d(AdjustableValues.getNumber("Steer_kD_" + moduleId));
-        if (AdjustableValues.hasChanged("Steer_kS_" + moduleId)) steerFFController.setKs(AdjustableValues.getNumber("Steer_kS_" + moduleId));
-        if (AdjustableValues.hasChanged("Steer_kV_" + moduleId)) steerFFController.setKv(AdjustableValues.getNumber("Steer_kV_" + moduleId));
-        if (!steerPIDConfig.closedLoop.flatten().equals(new ClosedLoopConfig().flatten())) steerMotor.configure(steerPIDConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        // SparkMaxConfig steerPIDConfig = new SparkMaxConfig();
+        // if (AdjustableValues.hasChanged("Steer_kP_" + moduleId)) steerPIDConfig.closedLoop.p(AdjustableValues.getNumber("Steer_kP_" + moduleId));
+        // if (AdjustableValues.hasChanged("Steer_kI_" + moduleId)) steerPIDConfig.closedLoop.i(AdjustableValues.getNumber("Steer_kI_" + moduleId));
+        // if (AdjustableValues.hasChanged("Steer_kD_" + moduleId)) steerPIDConfig.closedLoop.d(AdjustableValues.getNumber("Steer_kD_" + moduleId));
+        // if (AdjustableValues.hasChanged("Steer_kS_" + moduleId)) steerFFController.setKs(AdjustableValues.getNumber("Steer_kS_" + moduleId));
+        // if (AdjustableValues.hasChanged("Steer_kV_" + moduleId)) steerFFController.setKv(AdjustableValues.getNumber("Steer_kV_" + moduleId));
+        // if (!steerPIDConfig.closedLoop.flatten().equals(new ClosedLoopConfig().flatten())) steerMotor.configure(steerPIDConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
         SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerAbsPosition", getSteerAbsAngle().in(Degrees));
         SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerPosition/Actual", getSteerAngle().in(Degrees));

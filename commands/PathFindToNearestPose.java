@@ -1,3 +1,4 @@
+
 package frc.robot.subsystems.drive.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -18,7 +19,7 @@ public class PathFindToNearestPose extends Command {
     /**
      * Creates a new {@link PathfindToNearestPose} command.
      * It pathfinds to the nearest pose from a list of poses.
-     * 
+     *
      * @param drivetrain The {@link Drive} subsystem to control.
      * @param poses The list of poses to select from.
      */
@@ -29,7 +30,7 @@ public class PathFindToNearestPose extends Command {
     /**
      * Creates a new {@link PathfindToNearestPose} command.
      * It pathfinds to the nearest pose from a list of poses.
-     * 
+     *
      * @param drivetrain The {@link Drive} subsystem to control.
      * @param poses The list of poses to select from.
      */
@@ -42,7 +43,7 @@ public class PathFindToNearestPose extends Command {
 
     /**
      * Called when the command is initially scheduled.
-     * 
+     *
      * It updates the end pose when the command is initialized to prevent it from changing during pathfinding.
      */
     @Override
@@ -54,7 +55,7 @@ public class PathFindToNearestPose extends Command {
 
     /**
      * Called every time the scheduler runs while the command is scheduled.
-     * 
+     *
      * It gets the state of the trajectory at the current point in time and drives the robot with the output.
      */
     @Override
@@ -72,7 +73,7 @@ public class PathFindToNearestPose extends Command {
 
     /**
      * Returns true when the command should end.
-     * 
+     *
      * It returns true when the current pose is within the set tolerance for 5 ticks in a row (~0.1s).
      */
     @Override
@@ -90,7 +91,7 @@ public class PathFindToNearestPose extends Command {
 
     /**
      * Called once the command ends or is interrupted.
-     * 
+     *
      * It sets the speeds of the robot to 0.
      */
     @Override

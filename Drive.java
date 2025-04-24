@@ -1,3 +1,4 @@
+
 package frc.robot.subsystems.drive;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -16,6 +17,9 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringSubscriber;
+import edu.wpi.first.networktables.Topic;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -26,6 +30,9 @@ import frc.robot.subsystems.gyro.Gyro;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.util.VisionResult;
 import frc.robot.util.AdjustableValues;
+
+import java.net.NetworkInterface;
+
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
@@ -34,19 +41,19 @@ public class Drive extends SubsystemBase {
     private SwerveModulePosition[] positions;
 
     public PIDController xController = new PIDController(
-        AdjustableValues.getNumber("X_kP"),
-        AdjustableValues.getNumber("X_kI"),
-        AdjustableValues.getNumber("X_kD"));
+        0,//AdjustableValues.getNumber("X_kP"),
+        0,//AdjustableValues.getNumber("X_kI"),
+        0);//AdjustableValues.getNumber("X_kD"));
 
     public PIDController yController = new PIDController(
-        AdjustableValues.getNumber("Y_kP"),
-        AdjustableValues.getNumber("Y_kI"),
-        AdjustableValues.getNumber("Y_kD"));
+        0,//AdjustableValues.getNumber("Y_kP"),
+        0,//AdjustableValues.getNumber("Y_kI"),
+        0);//AdjustableValues.getNumber("Y_kD"));
 
     public PIDController thetaController = new PIDController(
-        AdjustableValues.getNumber("Theta_kP"),
-        AdjustableValues.getNumber("Theta_kI"),
-        AdjustableValues.getNumber("Theta_kD"));
+        0,//AdjustableValues.getNumber("Theta_kP"),
+        0,//AdjustableValues.getNumber("Theta_kI"),
+        0);//AdjustableValues.getNumber("Theta_kD"));
 
     private SwerveDriveKinematics kinematics;
     private SwerveDrivePoseEstimator poseEstimator;
@@ -63,7 +70,7 @@ public class Drive extends SubsystemBase {
 
     /**
      * Creates a new Drivetrain subsystem.
-     * 
+     *
      * @param gyro The gyro instance to get heading from.
      * @param vision The vision instance to get pose estimates from.
      * @param modules The module IOs to drive on.
@@ -87,11 +94,11 @@ public class Drive extends SubsystemBase {
         }
 
         /*
-         *  BL | FL 
-         *     |    
+         *  BL | FL
+         *     |
          * ---------
-         *     |    
-         *  BR | FR 
+         *     |
+         *  BR | FR
          */
 
         kinematics = new SwerveDriveKinematics(DriveConstants.translations);
@@ -110,7 +117,7 @@ public class Drive extends SubsystemBase {
             ),
             new RobotConfig(
                 DriveConstants.robotMass, DriveConstants.robotMOI,
-                new ModuleConfig(DriveConstants.wheelRadius, DriveConstants.maxLinearVelocity, 1, DCMotor.getKrakenX60(1).withReduction(DriveConstants.driveGearRatio), DriveConstants.driveCurrentLimit, 2), 
+                new ModuleConfig(DriveConstants.wheelRadius, DriveConstants.maxLinearVelocity, 1, DCMotor.getKrakenX60(1).withReduction(DriveConstants.driveGearRatio), DriveConstants.driveCurrentLimit, 2),
                 DriveConstants.translations),
             () -> (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red)),
             this);
@@ -122,17 +129,16 @@ public class Drive extends SubsystemBase {
     /**
      * DO NOT USE FOR ANYTHING OTHER THAN SYSID!!!
      * THIS FUNCTION DOES NOT CONTROL THE TURN MOTOR
-     * 
+     *
      * @param volts
      */
     public void driveVolts(Voltage volts) {
-
     }
 
     /**
      * This function logs values from sysId.
      * It only logs values from the drive motors.
-     * 
+     *
      * @param log The log structure to apply changes to.
      */
     public void sysIdLog(SysIdRoutineLog log) {
@@ -148,27 +154,27 @@ public class Drive extends SubsystemBase {
 
     /**
      * Runs once every tick the subsystem is active.
-     * 
+     *
      * It updates the module IO inputs, the estimated pose, and the module states/positions.
      * It also logs multiple values specific to the drivetrain subsystem.
      */
     @Override
     public void periodic() {
-        if (AdjustableValues.hasChanged("AutoAlignX_kP")) xController.setP(AdjustableValues.getNumber("AutoAlignX_kP"));
-        if (AdjustableValues.hasChanged("AutoAlignX_kI")) xController.setI(AdjustableValues.getNumber("AutoAlignX_kI"));
-        if (AdjustableValues.hasChanged("AutoAlignX_kD")) xController.setD(AdjustableValues.getNumber("AutoAlignX_kD"));
+        // if (AdjustableValues.hasChanged("AutoAlignX_kP")) xController.setP(AdjustableValues.getNumber("AutoAlignX_kP"));
+        // if (AdjustableValues.hasChanged("AutoAlignX_kI")) xController.setI(AdjustableValues.getNumber("AutoAlignX_kI"));
+        // if (AdjustableValues.hasChanged("AutoAlignX_kD")) xController.setD(AdjustableValues.getNumber("AutoAlignX_kD"));
 
-        if (AdjustableValues.hasChanged("AutoAlignY_kP")) yController.setP(AdjustableValues.getNumber("AutoAlignY_kP"));
-        if (AdjustableValues.hasChanged("AutoAlignY_kI")) yController.setI(AdjustableValues.getNumber("AutoAlignY_kI"));
-        if (AdjustableValues.hasChanged("AutoAlignY_kD")) yController.setD(AdjustableValues.getNumber("AutoAlignY_kD"));
+        // if (AdjustableValues.hasChanged("AutoAlignY_kP")) yController.setP(AdjustableValues.getNumber("AutoAlignY_kP"));
+        // if (AdjustableValues.hasChanged("AutoAlignY_kI")) yController.setI(AdjustableValues.getNumber("AutoAlignY_kI"));
+        // if (AdjustableValues.hasChanged("AutoAlignY_kD")) yController.setD(AdjustableValues.getNumber("AutoAlignY_kD"));
 
-        if (AdjustableValues.hasChanged("AutoAlignTheta_kP")) thetaController.setP(AdjustableValues.getNumber("AutoAlignTheta_kP"));
-        if (AdjustableValues.hasChanged("AutoAlignTheta_kI")) thetaController.setI(AdjustableValues.getNumber("AutoAlignTheta_kI"));
-        if (AdjustableValues.hasChanged("AutoAlignTheta_kD")) thetaController.setD(AdjustableValues.getNumber("AutoAlignTheta_kD"));
+        // if (AdjustableValues.hasChanged("AutoAlignTheta_kP")) thetaController.setP(AdjustableValues.getNumber("AutoAlignTheta_kP"));
+        // if (AdjustableValues.hasChanged("AutoAlignTheta_kI")) thetaController.setI(AdjustableValues.getNumber("AutoAlignTheta_kI"));
+        // if (AdjustableValues.hasChanged("AutoAlignTheta_kD")) thetaController.setD(AdjustableValues.getNumber("AutoAlignTheta_kD"));
 
         SwerveModulePosition[] oldPositions = positions.clone();
 
-        for (int i = 0; i < modules.length; i++) {            
+        for (int i = 0; i < modules.length; i++) {
             states[i] = modules[i].getModuleState();
             positions[i] = modules[i].getModulePosition();
         }
@@ -210,7 +216,7 @@ public class Drive extends SubsystemBase {
 
     /**
      * Resets the pose
-     * 
+     *
      * @param newPose The new pose to go to.
      */
     public void resetPose(Pose2d newPose) {
@@ -229,7 +235,7 @@ public class Drive extends SubsystemBase {
 
     /**
      * Drives the robot according to some ChassisSpeeds.
-     * 
+     *
      * If the heading is locked, omega is ignored.
      */
     public void drive(ChassisSpeeds speeds) {
@@ -260,7 +266,7 @@ public class Drive extends SubsystemBase {
 
     /**
      * Locks the heading.
-     * 
+     *
      * @param angle The angle to lock the heading to.
      */
     public void setHeadingLock(boolean lock, Rotation2d angle) {
@@ -275,7 +281,7 @@ public class Drive extends SubsystemBase {
 
     /**
      * Gets the angle that the robot is locked onto.
-     * 
+     *
      * Returns null if the heading is not locked.
      */
     public Rotation2d getLockedAngle() {
@@ -291,7 +297,7 @@ public class Drive extends SubsystemBase {
     public SwerveDriveKinematics getKinematics() {
         return kinematics;
     }
-    
+
     /** Follows a choreo trajectory. */
     public void followTrajectory(SwerveSample sample) {
         drive(ChassisSpeeds.fromFieldRelativeSpeeds(sample.getChassisSpeeds(), heading));
