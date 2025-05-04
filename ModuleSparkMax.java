@@ -12,15 +12,15 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructTopic;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -28,8 +28,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.util.AdjustableValues;
+import frc.robot.util.TurboLogger;
 
 public class ModuleSparkMax extends Module {
     private int moduleId;
@@ -48,9 +47,6 @@ public class ModuleSparkMax extends Module {
     private SimpleMotorFeedforward driveFFController;
     private SimpleMotorFeedforward steerFFController;
 
-    private StructTopic<SwerveModulePosition> modulePositionTopic;
-    private StructTopic<SwerveModuleState> moduleStateTopic;
-
     /**
      * Creates a new ModuleIO with SparkMAX motors.
      *
@@ -65,13 +61,13 @@ public class ModuleSparkMax extends Module {
         driveMotor = new SparkMax((int) DriveConstants.moduleConfigs[moduleId][0], MotorType.kBrushless);
         steerMotor = new SparkMax((int) DriveConstants.moduleConfigs[moduleId][1], MotorType.kBrushless);
 
-        driveFFController = new SimpleMotorFeedforward(0, 0, 0);//AdjustableValues.getNumber("Drive_kS_" + moduleId), AdjustableValues.getNumber("Drive_kV_" + moduleId), 0, 0.02);
-        steerFFController = new SimpleMotorFeedforward(0, 0, 0);//AdjustableValues.getNumber("Steer_kS_" + moduleId), AdjustableValues.getNumber("Steer_kV_" + moduleId), 0, 0.02);
+        driveFFController = new SimpleMotorFeedforward(TurboLogger.get("Drive_kS_" + moduleId, DriveConstants.kSDriveDefault), TurboLogger.get("Drive_kV_" + moduleId, DriveConstants.kVDriveDefault), 0, 0.02);
+        steerFFController = new SimpleMotorFeedforward(TurboLogger.get("Steer_kS_" + moduleId, DriveConstants.kSSteerDefault), TurboLogger.get("Steer_kV_" + moduleId, DriveConstants.kVSteerDefault), 0, 0.02);
 
         SparkMaxConfig driveConfig = new SparkMaxConfig();
-        // driveConfig.closedLoop.p(AdjustableValues.getNumber("Drive_kP_" + moduleId), ClosedLoopSlot.kSlot0);
-        // driveConfig.closedLoop.i(AdjustableValues.getNumber("Drive_kI_" + moduleId), ClosedLoopSlot.kSlot0);
-        // driveConfig.closedLoop.d(AdjustableValues.getNumber("Drive_kD_" + moduleId), ClosedLoopSlot.kSlot0);
+        driveConfig.closedLoop.p(TurboLogger.get("Drive_kP_" + moduleId, DriveConstants.kPDriveDefault), ClosedLoopSlot.kSlot0);
+        driveConfig.closedLoop.i(TurboLogger.get("Drive_kI_" + moduleId, DriveConstants.kIDriveDefault), ClosedLoopSlot.kSlot0);
+        driveConfig.closedLoop.d(TurboLogger.get("Drive_kD_" + moduleId, DriveConstants.kDDriveDefault), ClosedLoopSlot.kSlot0);
         driveConfig.encoder.positionConversionFactor(DriveConstants.wheelRadius.in(Meters) / DriveConstants.driveGearRatio);
         driveConfig.encoder.velocityConversionFactor(DriveConstants.wheelRadius.in(Meters) / DriveConstants.driveGearRatio / 60);
         driveConfig.inverted(false);
@@ -79,9 +75,9 @@ public class ModuleSparkMax extends Module {
         driveConfig.smartCurrentLimit((int) DriveConstants.driveCurrentLimit.in(Amps));
 
         SparkMaxConfig steerConfig = new SparkMaxConfig();
-        // steerConfig.closedLoop.p(AdjustableValues.getNumber("Steer_kP_" + moduleId), ClosedLoopSlot.kSlot0);
-        // steerConfig.closedLoop.i(AdjustableValues.getNumber("Steer_kI_" + moduleId), ClosedLoopSlot.kSlot0);
-        // steerConfig.closedLoop.d(AdjustableValues.getNumber("Steer_kD_" + moduleId), ClosedLoopSlot.kSlot0);
+        steerConfig.closedLoop.p(TurboLogger.get("Steer_kP_" + moduleId, DriveConstants.kPSteerDefault), ClosedLoopSlot.kSlot0);
+        steerConfig.closedLoop.i(TurboLogger.get("Steer_kI_" + moduleId, DriveConstants.kISteerDefault), ClosedLoopSlot.kSlot0);
+        steerConfig.closedLoop.d(TurboLogger.get("Steer_kD_" + moduleId, DriveConstants.kDSteerDefault), ClosedLoopSlot.kSlot0);
         steerConfig.closedLoop.positionWrappingEnabled(true);
         steerConfig.closedLoop.positionWrappingInputRange(-Math.PI, Math.PI);
         steerConfig.encoder.positionConversionFactor(2 * Math.PI / DriveConstants.steerGearRatio);
@@ -100,49 +96,46 @@ public class ModuleSparkMax extends Module {
 
         driveController = driveMotor.getClosedLoopController();
         steerController = steerMotor.getClosedLoopController();
-
-        modulePositionTopic = NetworkTableInstance.getDefault().getStructTopic("/Drive/Module" + moduleId + "/Position", SwerveModulePosition.struct);
-        moduleStateTopic = NetworkTableInstance.getDefault().getStructTopic("/Drive/Module" + moduleId + "/State", SwerveModuleState.struct);
     }
 
     @Override
     public void periodic() {
-        // SparkMaxConfig drivePIDConfig = new SparkMaxConfig();
-        // if (AdjustableValues.hasChanged("Drive_kP_" + moduleId)) drivePIDConfig.closedLoop.p(AdjustableValues.getNumber("Drive_kP_" + moduleId));
-        // if (AdjustableValues.hasChanged("Drive_kI_" + moduleId)) drivePIDConfig.closedLoop.i(AdjustableValues.getNumber("Drive_kI_" + moduleId));
-        // if (AdjustableValues.hasChanged("Drive_kD_" + moduleId)) drivePIDConfig.closedLoop.d(AdjustableValues.getNumber("Drive_kD_" + moduleId));
-        // if (AdjustableValues.hasChanged("Drive_kS_" + moduleId)) driveFFController.setKs(AdjustableValues.getNumber("Drive_kS_" + moduleId));
-        // if (AdjustableValues.hasChanged("Drive_kV_" + moduleId)) driveFFController.setKv(AdjustableValues.getNumber("Drive_kV_" + moduleId));
-        // if (!drivePIDConfig.closedLoop.flatten().equals(new ClosedLoopConfig().flatten())) driveMotor.configure(drivePIDConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        SparkMaxConfig drivePIDConfig = new SparkMaxConfig();
+        if (TurboLogger.hasChanged("Drive_kP_" + moduleId)) drivePIDConfig.closedLoop.p(TurboLogger.get("Drive_kP_" + moduleId, DriveConstants.kPDriveDefault));
+        if (TurboLogger.hasChanged("Drive_kI_" + moduleId)) drivePIDConfig.closedLoop.i(TurboLogger.get("Drive_kI_" + moduleId, DriveConstants.kIDriveDefault));
+        if (TurboLogger.hasChanged("Drive_kD_" + moduleId)) drivePIDConfig.closedLoop.d(TurboLogger.get("Drive_kD_" + moduleId, DriveConstants.kDDriveDefault));
+        if (TurboLogger.hasChanged("Drive_kS_" + moduleId)) driveFFController.setKs(TurboLogger.get("Drive_kS_" + moduleId, DriveConstants.kSDriveDefault));
+        if (TurboLogger.hasChanged("Drive_kV_" + moduleId)) driveFFController.setKv(TurboLogger.get("Drive_kV_" + moduleId, DriveConstants.kVDriveDefault));
+        if (!drivePIDConfig.closedLoop.flatten().equals(new ClosedLoopConfig().flatten())) driveMotor.configure(drivePIDConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
-        // SparkMaxConfig steerPIDConfig = new SparkMaxConfig();
-        // if (AdjustableValues.hasChanged("Steer_kP_" + moduleId)) steerPIDConfig.closedLoop.p(AdjustableValues.getNumber("Steer_kP_" + moduleId));
-        // if (AdjustableValues.hasChanged("Steer_kI_" + moduleId)) steerPIDConfig.closedLoop.i(AdjustableValues.getNumber("Steer_kI_" + moduleId));
-        // if (AdjustableValues.hasChanged("Steer_kD_" + moduleId)) steerPIDConfig.closedLoop.d(AdjustableValues.getNumber("Steer_kD_" + moduleId));
-        // if (AdjustableValues.hasChanged("Steer_kS_" + moduleId)) steerFFController.setKs(AdjustableValues.getNumber("Steer_kS_" + moduleId));
-        // if (AdjustableValues.hasChanged("Steer_kV_" + moduleId)) steerFFController.setKv(AdjustableValues.getNumber("Steer_kV_" + moduleId));
-        // if (!steerPIDConfig.closedLoop.flatten().equals(new ClosedLoopConfig().flatten())) steerMotor.configure(steerPIDConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        SparkMaxConfig steerPIDConfig = new SparkMaxConfig();
+        if (TurboLogger.hasChanged("Steer_kP_" + moduleId)) steerPIDConfig.closedLoop.p(TurboLogger.get("Steer_kP_" + moduleId, DriveConstants.kPSteerDefault));
+        if (TurboLogger.hasChanged("Steer_kI_" + moduleId)) steerPIDConfig.closedLoop.i(TurboLogger.get("Steer_kI_" + moduleId, DriveConstants.kISteerDefault));
+        if (TurboLogger.hasChanged("Steer_kD_" + moduleId)) steerPIDConfig.closedLoop.d(TurboLogger.get("Steer_kD_" + moduleId, DriveConstants.kDSteerDefault));
+        if (TurboLogger.hasChanged("Steer_kS_" + moduleId)) steerFFController.setKs(TurboLogger.get("Steer_kS_" + moduleId, DriveConstants.kSSteerDefault));
+        if (TurboLogger.hasChanged("Steer_kV_" + moduleId)) steerFFController.setKv(TurboLogger.get("Steer_kV_" + moduleId, DriveConstants.kVSteerDefault));
+        if (!steerPIDConfig.closedLoop.flatten().equals(new ClosedLoopConfig().flatten())) steerMotor.configure(steerPIDConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerAbsPosition", getSteerAbsAngle().in(Degrees));
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerPosition/Actual", getSteerAngle().in(Degrees));
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerVelocity", getSteerVelocity().in(DegreesPerSecond));
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerAcceleration", getSteerAcceleration().in(DegreesPerSecondPerSecond));
+        TurboLogger.log("/Drive/Module" + moduleId + "/SteerAbsPosition", getSteerAbsAngle().in(Degrees));
+        TurboLogger.log("/Drive/Module" + moduleId + "/SteerPosition/Actual", getSteerAngle().in(Degrees));
+        TurboLogger.log("/Drive/Module" + moduleId + "/SteerVelocity", getSteerVelocity().in(DegreesPerSecond));
+        TurboLogger.log("/Drive/Module" + moduleId + "/SteerAcceleration", getSteerAcceleration().in(DegreesPerSecondPerSecond));
 
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DrivePosition", getDrivePosition().in(Meters));
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DriveVelocity/Actual", getDriveVelocity().in(MetersPerSecond));
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DriveAcceleration", getDriveAcceleration().in(MetersPerSecondPerSecond));
+        TurboLogger.log("/Drive/Module" + moduleId + "/DrivePosition", getDrivePosition().in(Meters));
+        TurboLogger.log("/Drive/Module" + moduleId + "/DriveVelocity/Actual", getDriveVelocity().in(MetersPerSecond));
+        TurboLogger.log("/Drive/Module" + moduleId + "/DriveAcceleration", getDriveAcceleration().in(MetersPerSecondPerSecond));
 
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DriveVoltage", getSteerVoltage().in(Volts));
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerVoltage", getDriveVoltage().in(Volts));
+        TurboLogger.log("/Drive/Module" + moduleId + "/DriveVoltage", getSteerVoltage().in(Volts));
+        TurboLogger.log("/Drive/Module" + moduleId + "/SteerVoltage", getDriveVoltage().in(Volts));
 
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DriveCurrent", getDriveCurrent().in(Amps));
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerCurrent", getSteerCurrent().in(Amps));
+        TurboLogger.log("/Drive/Module" + moduleId + "/DriveCurrent", getDriveCurrent().in(Amps));
+        TurboLogger.log("/Drive/Module" + moduleId + "/SteerCurrent", getSteerCurrent().in(Amps));
 
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DriveTemperature", getDriveTemperature().in(Celsius));
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerTemperature", getSteerTemperature().in(Celsius));
+        TurboLogger.log("/Drive/Module" + moduleId + "/DriveTemperature", getDriveTemperature().in(Celsius));
+        TurboLogger.log("/Drive/Module" + moduleId + "/SteerTemperature", getSteerTemperature().in(Celsius));
 
-        modulePositionTopic.publish().set(getModulePosition());
-        moduleStateTopic.publish().set(getModuleState());
+        TurboLogger.log("/Drive/Module" + moduleId + "/ModulePosition", getModulePosition());
+        TurboLogger.log("/Drive/Module" + moduleId + "/ModuleState", getModuleState());
     }
 
     @Override

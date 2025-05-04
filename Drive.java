@@ -17,9 +17,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StringSubscriber;
-import edu.wpi.first.networktables.Topic;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -29,9 +26,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.gyro.Gyro;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.util.VisionResult;
-import frc.robot.util.AdjustableValues;
-
-import java.net.NetworkInterface;
+import frc.robot.util.TurboLogger;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -41,19 +36,19 @@ public class Drive extends SubsystemBase {
     private SwerveModulePosition[] positions;
 
     public PIDController xController = new PIDController(
-        0,//AdjustableValues.getNumber("X_kP"),
-        0,//AdjustableValues.getNumber("X_kI"),
-        0);//AdjustableValues.getNumber("X_kD"));
+        TurboLogger.get("/LoggedStuff/Adjustables/XController/kP", 0.0),
+        TurboLogger.get("/LoggedStuff/Adjustables/XController/kI", 0.0),
+        TurboLogger.get("/LoggedStuff/Adjustables/XController/kD", 0.0));
 
     public PIDController yController = new PIDController(
-        0,//AdjustableValues.getNumber("Y_kP"),
-        0,//AdjustableValues.getNumber("Y_kI"),
-        0);//AdjustableValues.getNumber("Y_kD"));
+        TurboLogger.get("/LoggedStuff/Adjustables/YController/kP", 0.0),
+        TurboLogger.get("/LoggedStuff/Adjustables/YController/kI", 0.0),
+        TurboLogger.get("/LoggedStuff/Adjustables/YController/kD", 0.0));
 
     public PIDController thetaController = new PIDController(
-        0,//AdjustableValues.getNumber("Theta_kP"),
-        0,//AdjustableValues.getNumber("Theta_kI"),
-        0);//AdjustableValues.getNumber("Theta_kD"));
+        TurboLogger.get("/LoggedStuff/Adjustables/ThetaController/kP", 0.0),
+        TurboLogger.get("/LoggedStuff/Adjustables/ThetaController/kI", 0.0),
+        TurboLogger.get("/LoggedStuff/Adjustables/ThetaController/kD", 0.0));
 
     private SwerveDriveKinematics kinematics;
     private SwerveDrivePoseEstimator poseEstimator;
@@ -160,17 +155,17 @@ public class Drive extends SubsystemBase {
      */
     @Override
     public void periodic() {
-        // if (AdjustableValues.hasChanged("AutoAlignX_kP")) xController.setP(AdjustableValues.getNumber("AutoAlignX_kP"));
-        // if (AdjustableValues.hasChanged("AutoAlignX_kI")) xController.setI(AdjustableValues.getNumber("AutoAlignX_kI"));
-        // if (AdjustableValues.hasChanged("AutoAlignX_kD")) xController.setD(AdjustableValues.getNumber("AutoAlignX_kD"));
+        if (TurboLogger.hasChanged("AutoAlignX_kP")) xController.setP(TurboLogger.get("AutoAlignX_kP", DriveConstants.kPX));
+        if (TurboLogger.hasChanged("AutoAlignX_kI")) xController.setI(TurboLogger.get("AutoAlignX_kI", DriveConstants.kIX));
+        if (TurboLogger.hasChanged("AutoAlignX_kD")) xController.setD(TurboLogger.get("AutoAlignX_kD", DriveConstants.kDX));
 
-        // if (AdjustableValues.hasChanged("AutoAlignY_kP")) yController.setP(AdjustableValues.getNumber("AutoAlignY_kP"));
-        // if (AdjustableValues.hasChanged("AutoAlignY_kI")) yController.setI(AdjustableValues.getNumber("AutoAlignY_kI"));
-        // if (AdjustableValues.hasChanged("AutoAlignY_kD")) yController.setD(AdjustableValues.getNumber("AutoAlignY_kD"));
+        if (TurboLogger.hasChanged("AutoAlignY_kP")) yController.setP(TurboLogger.get("AutoAlignY_kP", DriveConstants.kPY));
+        if (TurboLogger.hasChanged("AutoAlignY_kI")) yController.setI(TurboLogger.get("AutoAlignY_kI", DriveConstants.kIY));
+        if (TurboLogger.hasChanged("AutoAlignY_kD")) yController.setD(TurboLogger.get("AutoAlignY_kD", DriveConstants.kDY));
 
-        // if (AdjustableValues.hasChanged("AutoAlignTheta_kP")) thetaController.setP(AdjustableValues.getNumber("AutoAlignTheta_kP"));
-        // if (AdjustableValues.hasChanged("AutoAlignTheta_kI")) thetaController.setI(AdjustableValues.getNumber("AutoAlignTheta_kI"));
-        // if (AdjustableValues.hasChanged("AutoAlignTheta_kD")) thetaController.setD(AdjustableValues.getNumber("AutoAlignTheta_kD"));
+        if (TurboLogger.hasChanged("AutoAlignTheta_kP")) thetaController.setP(TurboLogger.get("AutoAlignTheta_kP", DriveConstants.kPTheta));
+        if (TurboLogger.hasChanged("AutoAlignTheta_kI")) thetaController.setI(TurboLogger.get("AutoAlignTheta_kI", DriveConstants.kITheta));
+        if (TurboLogger.hasChanged("AutoAlignTheta_kD")) thetaController.setD(TurboLogger.get("AutoAlignTheta_kD", DriveConstants.kDTheta));
 
         SwerveModulePosition[] oldPositions = positions.clone();
 

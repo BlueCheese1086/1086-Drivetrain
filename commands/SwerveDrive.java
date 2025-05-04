@@ -5,7 +5,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.util.AdjustableValues;
+import frc.robot.util.TurboLogger;
 import frc.robot.util.MathUtils;
 import java.util.function.Supplier;
 
@@ -64,9 +64,9 @@ public class SwerveDrive extends Command {
         double zSteer = MathUtils.applyDeadbandWithOffsets(zSteerSupplier.get(), 0.1, 0.9);
 
         // Applying max speeds
-        // xSpeed *= AdjustableValues.getNumber("DriveX_Percent");
-        // ySpeed *= AdjustableValues.getNumber("DriveY_Percent");
-        // zSteer *= AdjustableValues.getNumber("Steer_Percent");
+        xSpeed *= TurboLogger.get("DriveX_Percent", DriveConstants.driveXPercent);
+        ySpeed *= TurboLogger.get("DriveY_Percent", DriveConstants.driveYPercent);
+        zSteer *= TurboLogger.get("Steer_Percent", DriveConstants.steerPercent);
 
         // Getting speeds
         ChassisSpeeds speeds = new ChassisSpeeds(

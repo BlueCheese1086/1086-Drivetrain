@@ -10,8 +10,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructTopic;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -21,8 +19,8 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.util.AdjustableValues;
+import frc.robot.util.TurboLogger;
+
 import org.littletonrobotics.junction.Logger;
 
 public class ModuleSim extends Module {
@@ -37,9 +35,6 @@ public class ModuleSim extends Module {
     private SimpleMotorFeedforward driveFFController;
     private SimpleMotorFeedforward steerFFController;
 
-    private StructTopic<SwerveModulePosition> modulePositionTopic;
-    private StructTopic<SwerveModuleState> moduleStateTopic;
-
     /**
      * Creates a simulated ModuleIO.
      *
@@ -48,34 +43,31 @@ public class ModuleSim extends Module {
     public ModuleSim(int moduleId) {
         this.moduleId = moduleId;
 
-        driveFFController = new SimpleMotorFeedforward(0, 0, 0);//AdjustableValues.getNumber("Drive_kS_" + moduleId), AdjustableValues.getNumber("Drive_kV_" + moduleId), 0);
-        steerFFController = new SimpleMotorFeedforward(0, 0, 0);//AdjustableValues.getNumber("Steer_kS_" + moduleId), AdjustableValues.getNumber("Steer_kV_" + moduleId), 0);
+        driveFFController = new SimpleMotorFeedforward(TurboLogger.get("Drive_kS_" + moduleId, DriveConstants.kSDriveDefault), TurboLogger.get("Drive_kV_" + moduleId, DriveConstants.kVDriveDefault), 0);
+        steerFFController = new SimpleMotorFeedforward(TurboLogger.get("Steer_kS_" + moduleId, DriveConstants.kSSteerDefault), TurboLogger.get("Steer_kV_" + moduleId, DriveConstants.kVSteerDefault), 0);
 
         driveMotor = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), DriveConstants.driveMOI, DriveConstants.driveGearRatio), DCMotor.getKrakenX60(1));
         steerMotor = new DCMotorSim(LinearSystemId.createDCMotorSystem(DriveConstants.krakenX44, DriveConstants.steerMOI, DriveConstants.steerGearRatio), DriveConstants.krakenX44);
 
-        driveController = new PIDController(0, 0, 0);//AdjustableValues.getNumber("Drive_kP_" + moduleId), AdjustableValues.getNumber("Drive_kI_" + moduleId), AdjustableValues.getNumber("Drive_kD_" + moduleId));
-        steerController = new PIDController(0, 0, 0);//AdjustableValues.getNumber("Steer_kP_" + moduleId), AdjustableValues.getNumber("Steer_kI_" + moduleId), AdjustableValues.getNumber("Steer_kD_" + moduleId));
+        driveController = new PIDController(TurboLogger.get("Drive_kP_" + moduleId, DriveConstants.kPDriveDefault), TurboLogger.get("Drive_kI_" + moduleId, DriveConstants.kIDriveDefault), TurboLogger.get("Drive_kD_" + moduleId, DriveConstants.kDDriveDefault));
+        steerController = new PIDController(TurboLogger.get("Steer_kP_" + moduleId, DriveConstants.kPSteerDefault), TurboLogger.get("Steer_kI_" + moduleId, DriveConstants.kISteerDefault), TurboLogger.get("Steer_kD_" + moduleId, DriveConstants.kDSteerDefault));
 
         steerController.enableContinuousInput(Math.PI, -Math.PI);
-
-        // modulePositionTopic = NetworkTableInstance.getDefault().getStructTopic("/Drive/Module" + moduleId + "/Position", SwerveModulePosition.struct);
-        // moduleStateTopic = NetworkTableInstance.getDefault().getStructTopic("/Drive/Module" + moduleId + "/State", SwerveModuleState.struct);
     }
 
     @Override
     public void periodic() {
-        // if (AdjustableValues.hasChanged("Drive_kP_" + moduleId)) driveController.setP(AdjustableValues.getNumber("Drive_kP_" + moduleId));
-        // if (AdjustableValues.hasChanged("Drive_kI_" + moduleId)) driveController.setI(AdjustableValues.getNumber("Drive_kI_" + moduleId));
-        // if (AdjustableValues.hasChanged("Drive_kD_" + moduleId)) driveController.setD(AdjustableValues.getNumber("Drive_kD_" + moduleId));
-        // if (AdjustableValues.hasChanged("Drive_kS_" + moduleId)) driveFFController.setKs(AdjustableValues.getNumber("Drive_kS_" + moduleId));
-        // if (AdjustableValues.hasChanged("Drive_kV_" + moduleId)) driveFFController.setKv(AdjustableValues.getNumber("Drive_kV_" + moduleId));
+        if (TurboLogger.hasChanged("Drive_kP_" + moduleId)) driveController.setP(TurboLogger.get("Drive_kP_" + moduleId, DriveConstants.kPDriveDefault));
+        if (TurboLogger.hasChanged("Drive_kI_" + moduleId)) driveController.setI(TurboLogger.get("Drive_kI_" + moduleId, DriveConstants.kIDriveDefault));
+        if (TurboLogger.hasChanged("Drive_kD_" + moduleId)) driveController.setD(TurboLogger.get("Drive_kD_" + moduleId, DriveConstants.kDDriveDefault));
+        if (TurboLogger.hasChanged("Drive_kS_" + moduleId)) driveFFController.setKs(TurboLogger.get("Drive_kS_" + moduleId, DriveConstants.kSDriveDefault));
+        if (TurboLogger.hasChanged("Drive_kV_" + moduleId)) driveFFController.setKv(TurboLogger.get("Drive_kV_" + moduleId, DriveConstants.kVDriveDefault));
 
-        // if (AdjustableValues.hasChanged("Steer_kP_" + moduleId)) steerController.setP(AdjustableValues.getNumber("Steer_kP_" + moduleId));
-        // if (AdjustableValues.hasChanged("Steer_kI_" + moduleId)) steerController.setI(AdjustableValues.getNumber("Steer_kI_" + moduleId));
-        // if (AdjustableValues.hasChanged("Steer_kD_" + moduleId)) steerController.setD(AdjustableValues.getNumber("Steer_kD_" + moduleId));
-        // if (AdjustableValues.hasChanged("Steer_kS_" + moduleId)) steerFFController.setKs(AdjustableValues.getNumber("Steer_kS_" + moduleId));
-        // if (AdjustableValues.hasChanged("Steer_kV_" + moduleId)) steerFFController.setKv(AdjustableValues.getNumber("Steer_kV_" + moduleId));
+        if (TurboLogger.hasChanged("Steer_kP_" + moduleId)) steerController.setP(TurboLogger.get("Steer_kP_" + moduleId, DriveConstants.kPSteerDefault));
+        if (TurboLogger.hasChanged("Steer_kI_" + moduleId)) steerController.setI(TurboLogger.get("Steer_kI_" + moduleId, DriveConstants.kISteerDefault));
+        if (TurboLogger.hasChanged("Steer_kD_" + moduleId)) steerController.setD(TurboLogger.get("Steer_kD_" + moduleId, DriveConstants.kDSteerDefault));
+        if (TurboLogger.hasChanged("Steer_kS_" + moduleId)) steerFFController.setKs(TurboLogger.get("Steer_kS_" + moduleId, DriveConstants.kSSteerDefault));
+        if (TurboLogger.hasChanged("Steer_kV_" + moduleId)) steerFFController.setKv(TurboLogger.get("Steer_kV_" + moduleId, DriveConstants.kVSteerDefault));
 
         Logger.recordOutput("/Drive/Module" + moduleId + "/PIDS/Drive_kP", driveController.getP());
         Logger.recordOutput("/Drive/Module" + moduleId + "/PIDS/Drive_kI", driveController.getI());
@@ -98,29 +90,30 @@ public class ModuleSim extends Module {
         driveMotor.update(0.02);
         steerMotor.update(0.02);
 
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerAbsPosition", getSteerAbsAngle().in(Degrees));
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerPosition/Actual", getSteerAngle().in(Degrees));
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerVelocity", getSteerVelocity().in(DegreesPerSecond));
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerAcceleration", getSteerAcceleration().in(DegreesPerSecondPerSecond));
+        TurboLogger.log("/Drive/Module" + moduleId + "/SteerAbsPosition", getSteerAbsAngle().in(Degrees));
+        TurboLogger.log("/Drive/Module" + moduleId + "/SteerPosition/Actual", getSteerAngle().in(Degrees));
+        TurboLogger.log("/Drive/Module" + moduleId + "/SteerVelocity", getSteerVelocity().in(DegreesPerSecond));
+        TurboLogger.log("/Drive/Module" + moduleId + "/SteerAcceleration", getSteerAcceleration().in(DegreesPerSecondPerSecond));
 
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DrivePosition", getDrivePosition().in(Meters));
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DriveVelocity/Actual", getDriveVelocity().in(MetersPerSecond));
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DriveAcceleration", getDriveAcceleration().in(MetersPerSecondPerSecond));
+        TurboLogger.log("/Drive/Module" + moduleId + "/DrivePosition", getDrivePosition().in(Meters));
+        TurboLogger.log("/Drive/Module" + moduleId + "/DriveVelocity/Actual", getDriveVelocity().in(MetersPerSecond));
+        TurboLogger.log("/Drive/Module" + moduleId + "/DriveAcceleration", getDriveAcceleration().in(MetersPerSecondPerSecond));
 
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DriveVoltage", getSteerVoltage().in(Volts));
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerVoltage", getDriveVoltage().in(Volts));
+        TurboLogger.log("/Drive/Module" + moduleId + "/DriveVoltage", getSteerVoltage().in(Volts));
+        TurboLogger.log("/Drive/Module" + moduleId + "/SteerVoltage", getDriveVoltage().in(Volts));
 
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/DriveCurrent", getDriveCurrent().in(Amps));
-        SmartDashboard.putNumber("/Drive/Module" + moduleId + "/SteerCurrent", getSteerCurrent().in(Amps));
+        TurboLogger.log("/Drive/Module" + moduleId + "/DriveCurrent", getDriveCurrent().in(Amps));
+        TurboLogger.log("/Drive/Module" + moduleId + "/SteerCurrent", getSteerCurrent().in(Amps));
 
-        modulePositionTopic.publish().set(getModulePosition());
-        moduleStateTopic.publish().set(getModuleState());
+        TurboLogger.log("/Drive/Module" + moduleId + "/DriveCurrent", getModulePosition());
+        TurboLogger.log("/Drive/Module" + moduleId + "/DriveCurrent", getModuleState());
     }
 
     @Override
     public void setState(SwerveModuleState state) {
         driveController.setSetpoint(state.speedMetersPerSecond / DriveConstants.wheelRadius.in(Meters));
         steerController.setSetpoint(state.angle.getRadians());
+        Logger.recordOutput(getSubsystem(), Degrees.of(1));
     }
 
     @Override
