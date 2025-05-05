@@ -1,4 +1,3 @@
-
 package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
@@ -52,11 +51,16 @@ public class ModuleTalonFX extends Module {
         driveConfig.Feedback.SensorToMechanismRatio = DriveConstants.driveGearRatio;
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        driveConfig.Slot0.kP = TurboLogger.get("Drive_kP_" + moduleId, DriveConstants.kPDriveDefault);
-        driveConfig.Slot0.kI = TurboLogger.get("Drive_kI_" + moduleId, DriveConstants.kIDriveDefault);
-        driveConfig.Slot0.kD = TurboLogger.get("Drive_kD_" + moduleId, DriveConstants.kDDriveDefault);
-        driveConfig.Slot0.kS = TurboLogger.get("Drive_kS_" + moduleId, DriveConstants.kSDriveDefault);
-        driveConfig.Slot0.kV = TurboLogger.get("Drive_kV_" + moduleId, DriveConstants.kVDriveDefault);
+        driveConfig.Slot0.kP =
+                TurboLogger.get("Drive_kP_" + moduleId, DriveConstants.kPDriveDefault);
+        driveConfig.Slot0.kI =
+                TurboLogger.get("Drive_kI_" + moduleId, DriveConstants.kIDriveDefault);
+        driveConfig.Slot0.kD =
+                TurboLogger.get("Drive_kD_" + moduleId, DriveConstants.kDDriveDefault);
+        driveConfig.Slot0.kS =
+                TurboLogger.get("Drive_kS_" + moduleId, DriveConstants.kSDriveDefault);
+        driveConfig.Slot0.kV =
+                TurboLogger.get("Drive_kV_" + moduleId, DriveConstants.kVDriveDefault);
         driveConfig.Voltage.PeakForwardVoltage = 12;
         driveConfig.Voltage.PeakReverseVoltage = -12;
 
@@ -64,17 +68,23 @@ public class ModuleTalonFX extends Module {
         steerConfig.ClosedLoopGeneral.ContinuousWrap = true;
         steerConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.steerCurrentLimit.in(Amps);
         steerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        steerConfig.Feedback.FeedbackRemoteSensorID = (int) DriveConstants.moduleConfigs[moduleId][2];
+        steerConfig.Feedback.FeedbackRemoteSensorID =
+                (int) DriveConstants.moduleConfigs[moduleId][2];
         steerConfig.Feedback.FeedbackRotorOffset = DriveConstants.moduleConfigs[moduleId][3];
         steerConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
         steerConfig.Feedback.SensorToMechanismRatio = DriveConstants.steerGearRatio;
         steerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         steerConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        steerConfig.Slot0.kP = TurboLogger.get("Steer_kP_" + moduleId, DriveConstants.kPSteerDefault);
-        steerConfig.Slot0.kI = TurboLogger.get("Steer_kI_" + moduleId, DriveConstants.kISteerDefault);
-        steerConfig.Slot0.kD = TurboLogger.get("Steer_kD_" + moduleId, DriveConstants.kDSteerDefault);
-        steerConfig.Slot0.kS = TurboLogger.get("Steer_kS_" + moduleId, DriveConstants.kSSteerDefault);
-        steerConfig.Slot0.kV = TurboLogger.get("Steer_kV_" + moduleId, DriveConstants.kVSteerDefault);
+        steerConfig.Slot0.kP =
+                TurboLogger.get("Steer_kP_" + moduleId, DriveConstants.kPSteerDefault);
+        steerConfig.Slot0.kI =
+                TurboLogger.get("Steer_kI_" + moduleId, DriveConstants.kISteerDefault);
+        steerConfig.Slot0.kD =
+                TurboLogger.get("Steer_kD_" + moduleId, DriveConstants.kDSteerDefault);
+        steerConfig.Slot0.kS =
+                TurboLogger.get("Steer_kS_" + moduleId, DriveConstants.kSSteerDefault);
+        steerConfig.Slot0.kV =
+                TurboLogger.get("Steer_kV_" + moduleId, DriveConstants.kVSteerDefault);
         steerConfig.Voltage.PeakForwardVoltage = 12;
         steerConfig.Voltage.PeakReverseVoltage = -12;
 
@@ -89,29 +99,62 @@ public class ModuleTalonFX extends Module {
         // What does refresh do vs apply?
         // driveMotor.getConfigurator().refresh(null);
         Slot0Configs drivePIDConfig = new Slot0Configs();
-        if (TurboLogger.hasChanged("Drive_kP_" + moduleId)) drivePIDConfig.kP = TurboLogger.get("Drive_kP_" + moduleId, DriveConstants.kPDriveDefault);
-        if (TurboLogger.hasChanged("Drive_kI_" + moduleId)) drivePIDConfig.kI = TurboLogger.get("Drive_kI_" + moduleId, DriveConstants.kIDriveDefault);
-        if (TurboLogger.hasChanged("Drive_kD_" + moduleId)) drivePIDConfig.kD = TurboLogger.get("Drive_kD_" + moduleId, DriveConstants.kDDriveDefault);
-        if (TurboLogger.hasChanged("Drive_kS_" + moduleId)) drivePIDConfig.kS = TurboLogger.get("Drive_kS_" + moduleId, DriveConstants.kSDriveDefault);
-        if (TurboLogger.hasChanged("Drive_kV_" + moduleId)) drivePIDConfig.kV = TurboLogger.get("Drive_kV_" + moduleId, DriveConstants.kVDriveDefault);
-        if (!drivePIDConfig.equals(new Slot0Configs())) driveMotor.getConfigurator().refresh(drivePIDConfig);
+        if (TurboLogger.hasChanged("Drive_kP_" + moduleId))
+            drivePIDConfig.kP =
+                    TurboLogger.get("Drive_kP_" + moduleId, DriveConstants.kPDriveDefault);
+        if (TurboLogger.hasChanged("Drive_kI_" + moduleId))
+            drivePIDConfig.kI =
+                    TurboLogger.get("Drive_kI_" + moduleId, DriveConstants.kIDriveDefault);
+        if (TurboLogger.hasChanged("Drive_kD_" + moduleId))
+            drivePIDConfig.kD =
+                    TurboLogger.get("Drive_kD_" + moduleId, DriveConstants.kDDriveDefault);
+        if (TurboLogger.hasChanged("Drive_kS_" + moduleId))
+            drivePIDConfig.kS =
+                    TurboLogger.get("Drive_kS_" + moduleId, DriveConstants.kSDriveDefault);
+        if (TurboLogger.hasChanged("Drive_kV_" + moduleId))
+            drivePIDConfig.kV =
+                    TurboLogger.get("Drive_kV_" + moduleId, DriveConstants.kVDriveDefault);
+        if (!drivePIDConfig.equals(new Slot0Configs()))
+            driveMotor.getConfigurator().refresh(drivePIDConfig);
 
         Slot0Configs steerPIDConfig = new Slot0Configs();
-        if (TurboLogger.hasChanged("Steer_kP_" + moduleId)) steerPIDConfig.kP = TurboLogger.get("Steer_kP_" + moduleId, DriveConstants.kPSteerDefault);
-        if (TurboLogger.hasChanged("Steer_kI_" + moduleId)) steerPIDConfig.kI = TurboLogger.get("Steer_kI_" + moduleId, DriveConstants.kISteerDefault);
-        if (TurboLogger.hasChanged("Steer_kD_" + moduleId)) steerPIDConfig.kD = TurboLogger.get("Steer_kD_" + moduleId, DriveConstants.kDSteerDefault);
-        if (TurboLogger.hasChanged("Steer_kS_" + moduleId)) steerPIDConfig.kS = TurboLogger.get("Steer_kS_" + moduleId, DriveConstants.kSSteerDefault);
-        if (TurboLogger.hasChanged("Steer_kV_" + moduleId)) steerPIDConfig.kV = TurboLogger.get("Steer_kV_" + moduleId, DriveConstants.kVSteerDefault);
-        if (!steerPIDConfig.equals(new Slot0Configs())) steerMotor.getConfigurator().refresh(steerPIDConfig);
+        if (TurboLogger.hasChanged("Steer_kP_" + moduleId))
+            steerPIDConfig.kP =
+                    TurboLogger.get("Steer_kP_" + moduleId, DriveConstants.kPSteerDefault);
+        if (TurboLogger.hasChanged("Steer_kI_" + moduleId))
+            steerPIDConfig.kI =
+                    TurboLogger.get("Steer_kI_" + moduleId, DriveConstants.kISteerDefault);
+        if (TurboLogger.hasChanged("Steer_kD_" + moduleId))
+            steerPIDConfig.kD =
+                    TurboLogger.get("Steer_kD_" + moduleId, DriveConstants.kDSteerDefault);
+        if (TurboLogger.hasChanged("Steer_kS_" + moduleId))
+            steerPIDConfig.kS =
+                    TurboLogger.get("Steer_kS_" + moduleId, DriveConstants.kSSteerDefault);
+        if (TurboLogger.hasChanged("Steer_kV_" + moduleId))
+            steerPIDConfig.kV =
+                    TurboLogger.get("Steer_kV_" + moduleId, DriveConstants.kVSteerDefault);
+        if (!steerPIDConfig.equals(new Slot0Configs()))
+            steerMotor.getConfigurator().refresh(steerPIDConfig);
 
-        TurboLogger.log("/Drive/Module" + moduleId + "/SteerAbsPosition", getSteerAbsAngle().in(Degrees));
-        TurboLogger.log("/Drive/Module" + moduleId + "/SteerPosition/Actual", getSteerAngle().in(Degrees));
-        TurboLogger.log("/Drive/Module" + moduleId + "/SteerVelocity", getSteerVelocity().in(DegreesPerSecond));
-        TurboLogger.log("/Drive/Module" + moduleId + "/SteerAcceleration", getSteerAcceleration().in(DegreesPerSecondPerSecond));
+        TurboLogger.log(
+                "/Drive/Module" + moduleId + "/SteerAbsPosition", getSteerAbsAngle().in(Degrees));
+        TurboLogger.log(
+                "/Drive/Module" + moduleId + "/SteerPosition/Actual", getSteerAngle().in(Degrees));
+        TurboLogger.log(
+                "/Drive/Module" + moduleId + "/SteerVelocity",
+                getSteerVelocity().in(DegreesPerSecond));
+        TurboLogger.log(
+                "/Drive/Module" + moduleId + "/SteerAcceleration",
+                getSteerAcceleration().in(DegreesPerSecondPerSecond));
 
-        TurboLogger.log("/Drive/Module" + moduleId + "/DrivePosition", getDrivePosition().in(Meters));
-        TurboLogger.log("/Drive/Module" + moduleId + "/DriveVelocity/Actual", getDriveVelocity().in(MetersPerSecond));
-        TurboLogger.log("/Drive/Module" + moduleId + "/DriveAcceleration", getDriveAcceleration().in(MetersPerSecondPerSecond));
+        TurboLogger.log(
+                "/Drive/Module" + moduleId + "/DrivePosition", getDrivePosition().in(Meters));
+        TurboLogger.log(
+                "/Drive/Module" + moduleId + "/DriveVelocity/Actual",
+                getDriveVelocity().in(MetersPerSecond));
+        TurboLogger.log(
+                "/Drive/Module" + moduleId + "/DriveAcceleration",
+                getDriveAcceleration().in(MetersPerSecondPerSecond));
 
         TurboLogger.log("/Drive/Module" + moduleId + "/DriveVoltage", getSteerVoltage().in(Volts));
         TurboLogger.log("/Drive/Module" + moduleId + "/SteerVoltage", getDriveVoltage().in(Volts));
@@ -119,8 +162,12 @@ public class ModuleTalonFX extends Module {
         TurboLogger.log("/Drive/Module" + moduleId + "/DriveCurrent", getDriveCurrent().in(Amps));
         TurboLogger.log("/Drive/Module" + moduleId + "/SteerCurrent", getSteerCurrent().in(Amps));
 
-        TurboLogger.log("/Drive/Module" + moduleId + "/DriveTemperature", getDriveTemperature().in(Celsius));
-        TurboLogger.log("/Drive/Module" + moduleId + "/SteerTemperature", getSteerTemperature().in(Celsius));
+        TurboLogger.log(
+                "/Drive/Module" + moduleId + "/DriveTemperature",
+                getDriveTemperature().in(Celsius));
+        TurboLogger.log(
+                "/Drive/Module" + moduleId + "/SteerTemperature",
+                getSteerTemperature().in(Celsius));
 
         TurboLogger.log("/Drive/Module" + moduleId + "/ModulePosition", getModulePosition());
         TurboLogger.log("/Drive/Module" + moduleId + "/ModuleState", getModuleState());
@@ -128,14 +175,20 @@ public class ModuleTalonFX extends Module {
 
     @Override
     public void setState(SwerveModuleState state) {
-        driveMotor.setControl(driveControl.withVelocity(state.speedMetersPerSecond / 2 / Math.PI / DriveConstants.wheelRadius.in(Meters)));
+        driveMotor.setControl(
+                driveControl.withVelocity(
+                        state.speedMetersPerSecond
+                                / 2
+                                / Math.PI
+                                / DriveConstants.wheelRadius.in(Meters)));
         steerMotor.setControl(steerControl.withPosition(state.angle.getMeasure()));
     }
 
     @Override
     public void resetPosition(SwerveModulePosition position) {
         steerMotor.setPosition(position.angle.getMeasure());
-        driveMotor.setPosition(Radians.of(position.distanceMeters / DriveConstants.wheelRadius.in(Meters)));
+        driveMotor.setPosition(
+                Radians.of(position.distanceMeters / DriveConstants.wheelRadius.in(Meters)));
     }
 
     @Override
@@ -157,15 +210,21 @@ public class ModuleTalonFX extends Module {
     }
 
     public Distance getDrivePosition() {
-        return Meters.of(driveMotor.getPosition().getValue().in(Radians) * DriveConstants.wheelRadius.in(Meters));
+        return Meters.of(
+                driveMotor.getPosition().getValue().in(Radians)
+                        * DriveConstants.wheelRadius.in(Meters));
     }
 
     public LinearVelocity getDriveVelocity() {
-        return MetersPerSecond.of(driveMotor.getVelocity().getValue().in(RadiansPerSecond) * DriveConstants.wheelRadius.in(Meters));
+        return MetersPerSecond.of(
+                driveMotor.getVelocity().getValue().in(RadiansPerSecond)
+                        * DriveConstants.wheelRadius.in(Meters));
     }
 
     public LinearAcceleration getDriveAcceleration() {
-        return MetersPerSecondPerSecond.of(driveMotor.getAcceleration().getValue().in(RadiansPerSecondPerSecond) * DriveConstants.wheelRadius.in(Meters));
+        return MetersPerSecondPerSecond.of(
+                driveMotor.getAcceleration().getValue().in(RadiansPerSecondPerSecond)
+                        * DriveConstants.wheelRadius.in(Meters));
     }
 
     public Voltage getDriveVoltage() {

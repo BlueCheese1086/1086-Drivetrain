@@ -1,12 +1,11 @@
-
 package frc.robot.subsystems.drive.commands;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.util.TurboLogger;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.MathUtils;
+import frc.robot.util.TurboLogger;
 import java.util.function.Supplier;
 
 public class SwerveDrive extends Command {
@@ -21,17 +20,23 @@ public class SwerveDrive extends Command {
     private boolean lastToggleVal = false;
 
     /**
-     * Creates a new {@link SwerveDrive} command.
-     * It drives the robot based on different percent inputs.
+     * Creates a new {@link SwerveDrive} command. It drives the robot based on different percent
+     * inputs.
      *
      * @param drivetrain The {@link Drive} subsystem to control.
      * @param xSpeedSupplier The double supplier for the percent x speed of the robot [-1,1].
      * @param ySpeedSupplier The double supplier for the percent y speed of the robot [-1,1].
      * @param zSteerSupplier The double supplier for the percent steer speed of the robot [-1,1].
      * @param percentSupplier The double supplier for the max percent input. [0,1]
-     * @param toggleFieldRelative The boolean supplier for whether or not to use field relative speeds.
+     * @param toggleFieldRelative The boolean supplier for whether or not to use field relative
+     *     speeds.
      */
-    public SwerveDrive(Drive drivetrain, Supplier<Double> xSpeedSupplier, Supplier<Double> ySpeedSupplier, Supplier<Double> zSteerSupplier, Supplier<Boolean> toggleFieldRelative) {
+    public SwerveDrive(
+            Drive drivetrain,
+            Supplier<Double> xSpeedSupplier,
+            Supplier<Double> ySpeedSupplier,
+            Supplier<Double> zSteerSupplier,
+            Supplier<Boolean> toggleFieldRelative) {
         this.drivetrain = drivetrain;
         this.xSpeedSupplier = xSpeedSupplier;
         this.ySpeedSupplier = ySpeedSupplier;
@@ -44,7 +49,7 @@ public class SwerveDrive extends Command {
     /**
      * Called every time the scheduler runs while the command is scheduled.
      *
-     * It reads the input and drives the robot accordingly.
+     * <p>It reads the input and drives the robot accordingly.
      */
     @Override
     public void execute() {
@@ -58,7 +63,8 @@ public class SwerveDrive extends Command {
         lastToggleVal = toggleVal;
 
         // Getting values from the suppliers.
-        // Applying a deadband with an offset and then letting the normal values come through at an input of 0.9.
+        // Applying a deadband with an offset and then letting the normal values come through at an
+        // input of 0.9.
         double xSpeed = MathUtils.applyDeadbandWithOffsets(xSpeedSupplier.get(), 0.1, 0.9);
         double ySpeed = MathUtils.applyDeadbandWithOffsets(ySpeedSupplier.get(), 0.1, 0.9);
         double zSteer = MathUtils.applyDeadbandWithOffsets(zSteerSupplier.get(), 0.1, 0.9);
@@ -69,14 +75,17 @@ public class SwerveDrive extends Command {
         zSteer *= TurboLogger.get("Steer_Percent", DriveConstants.steerPercent);
 
         // Getting speeds
-        ChassisSpeeds speeds = new ChassisSpeeds(
-            DriveConstants.maxLinearVelocity.times(-xSpeed),
-            DriveConstants.maxLinearVelocity.times(-ySpeed),
-            DriveConstants.maxAngularVelocity.times(-zSteer));
+        ChassisSpeeds speeds =
+                new ChassisSpeeds(
+                        DriveConstants.maxLinearVelocity.times(-xSpeed),
+                        DriveConstants.maxLinearVelocity.times(-ySpeed),
+                        DriveConstants.maxAngularVelocity.times(-zSteer));
 
         // Checking whether to drive field relative or not.
         if (fieldRelative) {
-            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drivetrain.getPose().getRotation());
+            speeds =
+                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                            speeds, drivetrain.getPose().getRotation());
         }
 
         // Driving the robot

@@ -1,12 +1,11 @@
-
 package frc.robot.subsystems.drive;
 
+import choreo.trajectory.SwerveSample;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -27,7 +26,6 @@ import frc.robot.subsystems.gyro.Gyro;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.util.VisionResult;
 import frc.robot.util.TurboLogger;
-
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
@@ -35,20 +33,23 @@ public class Drive extends SubsystemBase {
     private SwerveModuleState[] states;
     private SwerveModulePosition[] positions;
 
-    public PIDController xController = new PIDController(
-        TurboLogger.get("/LoggedStuff/Adjustables/XController/kP", 0.0),
-        TurboLogger.get("/LoggedStuff/Adjustables/XController/kI", 0.0),
-        TurboLogger.get("/LoggedStuff/Adjustables/XController/kD", 0.0));
+    public PIDController xController =
+            new PIDController(
+                    TurboLogger.get("/LoggedStuff/Adjustables/XController/kP", 0.0),
+                    TurboLogger.get("/LoggedStuff/Adjustables/XController/kI", 0.0),
+                    TurboLogger.get("/LoggedStuff/Adjustables/XController/kD", 0.0));
 
-    public PIDController yController = new PIDController(
-        TurboLogger.get("/LoggedStuff/Adjustables/YController/kP", 0.0),
-        TurboLogger.get("/LoggedStuff/Adjustables/YController/kI", 0.0),
-        TurboLogger.get("/LoggedStuff/Adjustables/YController/kD", 0.0));
+    public PIDController yController =
+            new PIDController(
+                    TurboLogger.get("/LoggedStuff/Adjustables/YController/kP", 0.0),
+                    TurboLogger.get("/LoggedStuff/Adjustables/YController/kI", 0.0),
+                    TurboLogger.get("/LoggedStuff/Adjustables/YController/kD", 0.0));
 
-    public PIDController thetaController = new PIDController(
-        TurboLogger.get("/LoggedStuff/Adjustables/ThetaController/kP", 0.0),
-        TurboLogger.get("/LoggedStuff/Adjustables/ThetaController/kI", 0.0),
-        TurboLogger.get("/LoggedStuff/Adjustables/ThetaController/kD", 0.0));
+    public PIDController thetaController =
+            new PIDController(
+                    TurboLogger.get("/LoggedStuff/Adjustables/ThetaController/kP", 0.0),
+                    TurboLogger.get("/LoggedStuff/Adjustables/ThetaController/kI", 0.0),
+                    TurboLogger.get("/LoggedStuff/Adjustables/ThetaController/kD", 0.0));
 
     private SwerveDriveKinematics kinematics;
     private SwerveDrivePoseEstimator poseEstimator;
@@ -69,7 +70,7 @@ public class Drive extends SubsystemBase {
      * @param gyro The gyro instance to get heading from.
      * @param vision The vision instance to get pose estimates from.
      * @param modules The module IOs to drive on.
-    */
+     */
     public Drive(Gyro gyro, Vision vision, Module... modules) {
         xController.setTolerance(0.01);
         yController.setTolerance(0.01);
@@ -101,71 +102,97 @@ public class Drive extends SubsystemBase {
         poseEstimator = new SwerveDrivePoseEstimator(kinematics, heading, positions, new Pose2d());
 
         // Configuring SysID
-        new SysIdRoutine(new SysIdRoutine.Config(),
-            new SysIdRoutine.Mechanism(this::driveVolts, this::sysIdLog, this, "SwerveDrive"));
+        new SysIdRoutine(
+                new SysIdRoutine.Config(),
+                new SysIdRoutine.Mechanism(this::driveVolts, this::sysIdLog, this, "SwerveDrive"));
 
         // Configuring Pathplanner
-        AutoBuilder.configure(this::getPose, this::resetPose, this::getSpeeds, this::drive,
-            new PPHolonomicDriveController(
-                new PIDConstants(DriveConstants.kPDriveDefault, DriveConstants.kIDriveDefault, DriveConstants.kDDriveDefault),
-                new PIDConstants(DriveConstants.kPSteerDefault, DriveConstants.kISteerDefault, DriveConstants.kDSteerDefault)
-            ),
-            new RobotConfig(
-                DriveConstants.robotMass, DriveConstants.robotMOI,
-                new ModuleConfig(DriveConstants.wheelRadius, DriveConstants.maxLinearVelocity, 1, DCMotor.getKrakenX60(1).withReduction(DriveConstants.driveGearRatio), DriveConstants.driveCurrentLimit, 2),
-                DriveConstants.translations),
-            () -> (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red)),
-            this);
+        AutoBuilder.configure(
+                this::getPose,
+                this::resetPose,
+                this::getSpeeds,
+                this::drive,
+                new PPHolonomicDriveController(
+                        new PIDConstants(
+                                DriveConstants.kPDriveDefault,
+                                DriveConstants.kIDriveDefault,
+                                DriveConstants.kDDriveDefault),
+                        new PIDConstants(
+                                DriveConstants.kPSteerDefault,
+                                DriveConstants.kISteerDefault,
+                                DriveConstants.kDSteerDefault)),
+                new RobotConfig(
+                        DriveConstants.robotMass,
+                        DriveConstants.robotMOI,
+                        new ModuleConfig(
+                                DriveConstants.wheelRadius,
+                                DriveConstants.maxLinearVelocity,
+                                1,
+                                DCMotor.getKrakenX60(1)
+                                        .withReduction(DriveConstants.driveGearRatio),
+                                DriveConstants.driveCurrentLimit,
+                                2),
+                        DriveConstants.translations),
+                () ->
+                        (DriverStation.getAlliance().isPresent()
+                                && DriverStation.getAlliance().get().equals(Alliance.Red)),
+                this);
 
         // Configuring Choreo
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
     }
 
     /**
-     * DO NOT USE FOR ANYTHING OTHER THAN SYSID!!!
-     * THIS FUNCTION DOES NOT CONTROL THE TURN MOTOR
+     * DO NOT USE FOR ANYTHING OTHER THAN SYSID!!! THIS FUNCTION DOES NOT CONTROL THE TURN MOTOR
      *
      * @param volts
      */
-    public void driveVolts(Voltage volts) {
-    }
+    public void driveVolts(Voltage volts) {}
 
     /**
-     * This function logs values from sysId.
-     * It only logs values from the drive motors.
+     * This function logs values from sysId. It only logs values from the drive motors.
      *
      * @param log The log structure to apply changes to.
      */
     public void sysIdLog(SysIdRoutineLog log) {
         for (int i = 0; i < modules.length; i++) {
             log.motor("Module" + i + "_Drive")
-                .current(modules[i].getDriveCurrent())
-                .voltage(modules[i].getDriveVoltage())
-                .linearAcceleration(modules[i].getDriveAcceleration())
-                .linearVelocity(modules[i].getDriveVelocity())
-                .linearPosition(modules[i].getDrivePosition());
+                    .current(modules[i].getDriveCurrent())
+                    .voltage(modules[i].getDriveVoltage())
+                    .linearAcceleration(modules[i].getDriveAcceleration())
+                    .linearVelocity(modules[i].getDriveVelocity())
+                    .linearPosition(modules[i].getDrivePosition());
         }
     }
 
     /**
      * Runs once every tick the subsystem is active.
      *
-     * It updates the module IO inputs, the estimated pose, and the module states/positions.
-     * It also logs multiple values specific to the drivetrain subsystem.
+     * <p>It updates the module IO inputs, the estimated pose, and the module states/positions. It
+     * also logs multiple values specific to the drivetrain subsystem.
      */
     @Override
     public void periodic() {
-        if (TurboLogger.hasChanged("AutoAlignX_kP")) xController.setP(TurboLogger.get("AutoAlignX_kP", DriveConstants.kPX));
-        if (TurboLogger.hasChanged("AutoAlignX_kI")) xController.setI(TurboLogger.get("AutoAlignX_kI", DriveConstants.kIX));
-        if (TurboLogger.hasChanged("AutoAlignX_kD")) xController.setD(TurboLogger.get("AutoAlignX_kD", DriveConstants.kDX));
+        if (TurboLogger.hasChanged("AutoAlignX_kP"))
+            xController.setP(TurboLogger.get("AutoAlignX_kP", DriveConstants.kPX));
+        if (TurboLogger.hasChanged("AutoAlignX_kI"))
+            xController.setI(TurboLogger.get("AutoAlignX_kI", DriveConstants.kIX));
+        if (TurboLogger.hasChanged("AutoAlignX_kD"))
+            xController.setD(TurboLogger.get("AutoAlignX_kD", DriveConstants.kDX));
 
-        if (TurboLogger.hasChanged("AutoAlignY_kP")) yController.setP(TurboLogger.get("AutoAlignY_kP", DriveConstants.kPY));
-        if (TurboLogger.hasChanged("AutoAlignY_kI")) yController.setI(TurboLogger.get("AutoAlignY_kI", DriveConstants.kIY));
-        if (TurboLogger.hasChanged("AutoAlignY_kD")) yController.setD(TurboLogger.get("AutoAlignY_kD", DriveConstants.kDY));
+        if (TurboLogger.hasChanged("AutoAlignY_kP"))
+            yController.setP(TurboLogger.get("AutoAlignY_kP", DriveConstants.kPY));
+        if (TurboLogger.hasChanged("AutoAlignY_kI"))
+            yController.setI(TurboLogger.get("AutoAlignY_kI", DriveConstants.kIY));
+        if (TurboLogger.hasChanged("AutoAlignY_kD"))
+            yController.setD(TurboLogger.get("AutoAlignY_kD", DriveConstants.kDY));
 
-        if (TurboLogger.hasChanged("AutoAlignTheta_kP")) thetaController.setP(TurboLogger.get("AutoAlignTheta_kP", DriveConstants.kPTheta));
-        if (TurboLogger.hasChanged("AutoAlignTheta_kI")) thetaController.setI(TurboLogger.get("AutoAlignTheta_kI", DriveConstants.kITheta));
-        if (TurboLogger.hasChanged("AutoAlignTheta_kD")) thetaController.setD(TurboLogger.get("AutoAlignTheta_kD", DriveConstants.kDTheta));
+        if (TurboLogger.hasChanged("AutoAlignTheta_kP"))
+            thetaController.setP(TurboLogger.get("AutoAlignTheta_kP", DriveConstants.kPTheta));
+        if (TurboLogger.hasChanged("AutoAlignTheta_kI"))
+            thetaController.setI(TurboLogger.get("AutoAlignTheta_kI", DriveConstants.kITheta));
+        if (TurboLogger.hasChanged("AutoAlignTheta_kD"))
+            thetaController.setD(TurboLogger.get("AutoAlignTheta_kD", DriveConstants.kDTheta));
 
         SwerveModulePosition[] oldPositions = positions.clone();
 
@@ -174,14 +201,16 @@ public class Drive extends SubsystemBase {
             positions[i] = modules[i].getModulePosition();
         }
 
-
         if (gyro.isConnected()) {
             heading = gyro.getHeading();
         } else {
             SwerveModulePosition[] deltas = new SwerveModulePosition[4];
 
             for (int i = 0; i < 4; i++) {
-                deltas[i] = new SwerveModulePosition(positions[i].distanceMeters - oldPositions[i].distanceMeters, positions[i].angle);
+                deltas[i] =
+                        new SwerveModulePosition(
+                                positions[i].distanceMeters - oldPositions[i].distanceMeters,
+                                positions[i].angle);
             }
 
             Twist2d twist = kinematics.toTwist2d(deltas);
@@ -201,7 +230,8 @@ public class Drive extends SubsystemBase {
         Logger.recordOutput("/Subsystems/Drivetrain/States/Actual", states);
         Logger.recordOutput("/Subsystems/Drivetrain/Positions/Actual", positions);
 
-        Logger.recordOutput("/Subsystems/Drivetrain/RobotPose", poseEstimator.getEstimatedPosition());
+        Logger.recordOutput(
+                "/Subsystems/Drivetrain/RobotPose", poseEstimator.getEstimatedPosition());
     }
 
     /** Gets the current pose. */
@@ -231,17 +261,19 @@ public class Drive extends SubsystemBase {
     /**
      * Drives the robot according to some ChassisSpeeds.
      *
-     * If the heading is locked, omega is ignored.
+     * <p>If the heading is locked, omega is ignored.
      */
     public void drive(ChassisSpeeds speeds) {
         if (headingLocked) {
             Rotation2d angle = (lockedAngle == null) ? heading : lockedAngle;
-            speeds.omegaRadiansPerSecond = thetaController.calculate(heading.getRadians(), angle.getRadians());
+            speeds.omegaRadiansPerSecond =
+                    thetaController.calculate(heading.getRadians(), angle.getRadians());
         }
 
         speeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] desiredStates = kinematics.toSwerveModuleStates(speeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, DriveConstants.maxLinearVelocity);
+        SwerveDriveKinematics.desaturateWheelSpeeds(
+                desiredStates, DriveConstants.maxLinearVelocity);
 
         for (int i = 0; i < modules.length; i++) {
             desiredStates[i].optimize(new Rotation2d(modules[i].getSteerAngle()));
@@ -277,7 +309,7 @@ public class Drive extends SubsystemBase {
     /**
      * Gets the angle that the robot is locked onto.
      *
-     * Returns null if the heading is not locked.
+     * <p>Returns null if the heading is not locked.
      */
     public Rotation2d getLockedAngle() {
         return lockedAngle;
