@@ -4,9 +4,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.util.TurboLogger;
 import java.util.Arrays;
 import java.util.List;
-import org.littletonrobotics.junction.Logger;
 
 public class PathFindToNearestPose extends Command {
     private Drive drivetrain;
@@ -49,7 +49,7 @@ public class PathFindToNearestPose extends Command {
     @Override
     public void initialize() {
         endPose = drivetrain.getPose().nearest(poses);
-        Logger.recordOutput("/Drive/PIDPose", endPose);
+        TurboLogger.log("/Drive/PIDPose", endPose);
         shouldEnds = 0;
     }
 
@@ -84,9 +84,9 @@ public class PathFindToNearestPose extends Command {
     @Override
     public boolean isFinished() {
         boolean shouldEnd =
-                drivetrain.xController.atSetpoint()
-                        && drivetrain.yController.atSetpoint()
-                        && drivetrain.thetaController.atSetpoint();
+                drivetrain.xController.atSetpoint() &&
+                drivetrain.yController.atSetpoint() &&
+                drivetrain.thetaController.atSetpoint();
 
         if (shouldEnd) {
             shouldEnds++;

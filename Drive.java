@@ -26,7 +26,6 @@ import frc.robot.subsystems.gyro.Gyro;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.util.VisionResult;
 import frc.robot.util.TurboLogger;
-import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
     private Module[] modules;
@@ -35,21 +34,21 @@ public class Drive extends SubsystemBase {
 
     public PIDController xController =
             new PIDController(
-                    TurboLogger.get("/LoggedStuff/Adjustables/XController/kP", 0.0),
-                    TurboLogger.get("/LoggedStuff/Adjustables/XController/kI", 0.0),
-                    TurboLogger.get("/LoggedStuff/Adjustables/XController/kD", 0.0));
+                    TurboLogger.get("/LoggedStuff/Adjustables/XController/kP", DriveConstants.kPXDefault),
+                    TurboLogger.get("/LoggedStuff/Adjustables/XController/kI", DriveConstants.kIXDefault),
+                    TurboLogger.get("/LoggedStuff/Adjustables/XController/kD", DriveConstants.kDXDefault));
 
     public PIDController yController =
             new PIDController(
-                    TurboLogger.get("/LoggedStuff/Adjustables/YController/kP", 0.0),
-                    TurboLogger.get("/LoggedStuff/Adjustables/YController/kI", 0.0),
-                    TurboLogger.get("/LoggedStuff/Adjustables/YController/kD", 0.0));
+                    TurboLogger.get("/LoggedStuff/Adjustables/YController/kP", DriveConstants.kPYDefault),
+                    TurboLogger.get("/LoggedStuff/Adjustables/YController/kI", DriveConstants.kIYDefault),
+                    TurboLogger.get("/LoggedStuff/Adjustables/YController/kD", DriveConstants.kDYDefault));
 
     public PIDController thetaController =
             new PIDController(
-                    TurboLogger.get("/LoggedStuff/Adjustables/ThetaController/kP", 0.0),
-                    TurboLogger.get("/LoggedStuff/Adjustables/ThetaController/kI", 0.0),
-                    TurboLogger.get("/LoggedStuff/Adjustables/ThetaController/kD", 0.0));
+                    TurboLogger.get("/LoggedStuff/Adjustables/ThetaController/kP", DriveConstants.kPThetaDefault),
+                    TurboLogger.get("/LoggedStuff/Adjustables/ThetaController/kI", DriveConstants.kIThetaDefault),
+                    TurboLogger.get("/LoggedStuff/Adjustables/ThetaController/kD", DriveConstants.kDThetaDefault));
 
     private SwerveDriveKinematics kinematics;
     private SwerveDrivePoseEstimator poseEstimator;
@@ -65,7 +64,7 @@ public class Drive extends SubsystemBase {
     private Rotation2d heading = new Rotation2d();
 
     /**
-     * Creates a new Drivetrain subsystem.
+     * Creates a new Drive subsystem.
      *
      * @param gyro The gyro instance to get heading from.
      * @param vision The vision instance to get pose estimates from.
@@ -169,30 +168,21 @@ public class Drive extends SubsystemBase {
      * Runs once every tick the subsystem is active.
      *
      * <p>It updates the module IO inputs, the estimated pose, and the module states/positions. It
-     * also logs multiple values specific to the drivetrain subsystem.
+     * also logs multiple values specific to the Drive subsystem.
      */
     @Override
     public void periodic() {
-        if (TurboLogger.hasChanged("AutoAlignX_kP"))
-            xController.setP(TurboLogger.get("AutoAlignX_kP", DriveConstants.kPX));
-        if (TurboLogger.hasChanged("AutoAlignX_kI"))
-            xController.setI(TurboLogger.get("AutoAlignX_kI", DriveConstants.kIX));
-        if (TurboLogger.hasChanged("AutoAlignX_kD"))
-            xController.setD(TurboLogger.get("AutoAlignX_kD", DriveConstants.kDX));
+        if (TurboLogger.hasChanged("AutoAlignX_kP")) xController.setP(TurboLogger.get("AutoAlignX_kP", DriveConstants.kPXDefault));
+        if (TurboLogger.hasChanged("AutoAlignX_kI")) xController.setI(TurboLogger.get("AutoAlignX_kI", DriveConstants.kIXDefault));
+        if (TurboLogger.hasChanged("AutoAlignX_kD")) xController.setD(TurboLogger.get("AutoAlignX_kD", DriveConstants.kDXDefault));
 
-        if (TurboLogger.hasChanged("AutoAlignY_kP"))
-            yController.setP(TurboLogger.get("AutoAlignY_kP", DriveConstants.kPY));
-        if (TurboLogger.hasChanged("AutoAlignY_kI"))
-            yController.setI(TurboLogger.get("AutoAlignY_kI", DriveConstants.kIY));
-        if (TurboLogger.hasChanged("AutoAlignY_kD"))
-            yController.setD(TurboLogger.get("AutoAlignY_kD", DriveConstants.kDY));
+        if (TurboLogger.hasChanged("AutoAlignY_kP")) yController.setP(TurboLogger.get("AutoAlignY_kP", DriveConstants.kPYDefault));
+        if (TurboLogger.hasChanged("AutoAlignY_kI")) yController.setI(TurboLogger.get("AutoAlignY_kI", DriveConstants.kIYDefault));
+        if (TurboLogger.hasChanged("AutoAlignY_kD")) yController.setD(TurboLogger.get("AutoAlignY_kD", DriveConstants.kDYDefault));
 
-        if (TurboLogger.hasChanged("AutoAlignTheta_kP"))
-            thetaController.setP(TurboLogger.get("AutoAlignTheta_kP", DriveConstants.kPTheta));
-        if (TurboLogger.hasChanged("AutoAlignTheta_kI"))
-            thetaController.setI(TurboLogger.get("AutoAlignTheta_kI", DriveConstants.kITheta));
-        if (TurboLogger.hasChanged("AutoAlignTheta_kD"))
-            thetaController.setD(TurboLogger.get("AutoAlignTheta_kD", DriveConstants.kDTheta));
+        if (TurboLogger.hasChanged("AutoAlignTheta_kP")) thetaController.setP(TurboLogger.get("AutoAlignTheta_kP", DriveConstants.kPThetaDefault));
+        if (TurboLogger.hasChanged("AutoAlignTheta_kI")) thetaController.setI(TurboLogger.get("AutoAlignTheta_kI", DriveConstants.kIThetaDefault));
+        if (TurboLogger.hasChanged("AutoAlignTheta_kD")) thetaController.setD(TurboLogger.get("AutoAlignTheta_kD", DriveConstants.kDThetaDefault));
 
         SwerveModulePosition[] oldPositions = positions.clone();
 
@@ -224,14 +214,14 @@ public class Drive extends SubsystemBase {
             poseEstimator.addVisionMeasurement(result.getPose2d(), result.getTimestamp());
         }
 
-        Logger.recordOutput("/Subsystems/Drivetrain/HeadingLocked", headingLocked);
-        Logger.recordOutput("/Subsystems/Drivetrain/HeadingSetpoint", lockedAngle);
+        TurboLogger.log("/Drive/HeadingLocked", headingLocked);
+        TurboLogger.log("/Drive/HeadingSetpoint", lockedAngle);
 
-        Logger.recordOutput("/Subsystems/Drivetrain/States/Actual", states);
-        Logger.recordOutput("/Subsystems/Drivetrain/Positions/Actual", positions);
+        TurboLogger.log("/Drive/Speeds/Actual", kinematics.toChassisSpeeds(states));
+        TurboLogger.log("/Drive/States/Actual", states);
+        TurboLogger.log("/Drive/Positions/Actual", positions);
 
-        Logger.recordOutput(
-                "/Subsystems/Drivetrain/RobotPose", poseEstimator.getEstimatedPosition());
+        TurboLogger.log("/Drive/RobotPose", poseEstimator.getEstimatedPosition());
     }
 
     /** Gets the current pose. */
@@ -282,8 +272,8 @@ public class Drive extends SubsystemBase {
             modules[i].setState(desiredStates[i]);
         }
 
-        Logger.recordOutput("/Subsystems/Drivetrain/States/Setpoint", desiredStates);
-        Logger.recordOutput("/Subsystems/Drivetrain/Speeds/Setpoint", speeds);
+        TurboLogger.log("/Drive/States/Setpoint", desiredStates);
+        TurboLogger.log("/Drive/Speeds/Setpoint", speeds);
     }
 
     /** Locks the heading */

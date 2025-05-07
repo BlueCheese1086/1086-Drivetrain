@@ -112,18 +112,20 @@ public class DriveConstants {
         new SwerveModuleState(0, Rotation2d.fromDegrees(-135))
     };
 
-    public static final double kPX = 7;
-    public static final double kIX = 0;
-    public static final double kDX = 0;
+    public static final double kPXDefault = 7;
+    public static final double kIXDefault = 0;
+    public static final double kDXDefault = 0;
 
-    public static final double kPY = 7;
-    public static final double kIY = 0;
-    public static final double kDY = 0;
+    public static final double kPYDefault = 7;
+    public static final double kIYDefault = 0;
+    public static final double kDYDefault = 0;
 
-    public static final double kPTheta = 15;
-    public static final double kITheta = 0;
-    public static final double kDTheta = 0;
+    public static final double kPThetaDefault = 15;
+    public static final double kIThetaDefault = 0;
+    public static final double kDThetaDefault = 0;
 
     // Kraken X44 DCMotor instance
     public static final DCMotor krakenX44 = new DCMotor(12, 4.05, 275, 1.4, 788.54, 1);
+    
+    public static final double deadband = 0.1;
 }

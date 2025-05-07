@@ -28,8 +28,7 @@ public class SwerveDrive extends Command {
      * @param ySpeedSupplier The double supplier for the percent y speed of the robot [-1,1].
      * @param zSteerSupplier The double supplier for the percent steer speed of the robot [-1,1].
      * @param percentSupplier The double supplier for the max percent input. [0,1]
-     * @param toggleFieldRelative The boolean supplier for whether or not to use field relative
-     *     speeds.
+     * @param toggleFieldRelative The boolean supplier for whether or not to use field relative speeds.
      */
     public SwerveDrive(
             Drive drivetrain,
@@ -65,9 +64,9 @@ public class SwerveDrive extends Command {
         // Getting values from the suppliers.
         // Applying a deadband with an offset and then letting the normal values come through at an
         // input of 0.9.
-        double xSpeed = MathUtils.applyDeadbandWithOffsets(xSpeedSupplier.get(), 0.1, 0.9);
-        double ySpeed = MathUtils.applyDeadbandWithOffsets(ySpeedSupplier.get(), 0.1, 0.9);
-        double zSteer = MathUtils.applyDeadbandWithOffsets(zSteerSupplier.get(), 0.1, 0.9);
+        double xSpeed = MathUtils.applyDeadbandWithOffsets(xSpeedSupplier.get(), DriveConstants.deadband, 0.9);
+        double ySpeed = MathUtils.applyDeadbandWithOffsets(ySpeedSupplier.get(), DriveConstants.deadband, 0.9);
+        double zSteer = MathUtils.applyDeadbandWithOffsets(zSteerSupplier.get(), DriveConstants.deadband, 0.9);
 
         // Applying max speeds
         xSpeed *= TurboLogger.get("DriveX_Percent", DriveConstants.driveXPercent);
@@ -75,17 +74,14 @@ public class SwerveDrive extends Command {
         zSteer *= TurboLogger.get("Steer_Percent", DriveConstants.steerPercent);
 
         // Getting speeds
-        ChassisSpeeds speeds =
-                new ChassisSpeeds(
-                        DriveConstants.maxLinearVelocity.times(-xSpeed),
-                        DriveConstants.maxLinearVelocity.times(-ySpeed),
-                        DriveConstants.maxAngularVelocity.times(-zSteer));
+        ChassisSpeeds speeds = new ChassisSpeeds(
+                DriveConstants.maxLinearVelocity.times(-xSpeed),
+                DriveConstants.maxLinearVelocity.times(-ySpeed),
+                DriveConstants.maxAngularVelocity.times(-zSteer));
 
         // Checking whether to drive field relative or not.
         if (fieldRelative) {
-            speeds =
-                    ChassisSpeeds.fromFieldRelativeSpeeds(
-                            speeds, drivetrain.getPose().getRotation());
+            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drivetrain.getPose().getRotation());
         }
 
         // Driving the robot

@@ -1,6 +1,6 @@
 package frc.robot.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.Celsius;
 
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -13,70 +13,31 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Module extends SubsystemBase {
-    public void setState(SwerveModuleState state) {}
+public interface Module {
+    public Angle getSteerAbsAngle();
+    public Angle getSteerAngle();
+    public AngularVelocity getSteerVelocity();
+    public AngularAcceleration getSteerAcceleration();
 
-    public void resetPosition(SwerveModulePosition position) {}
+    public Distance getDrivePosition();
+    public LinearVelocity getDriveVelocity();
+    public LinearAcceleration getDriveAcceleration();
+    
+    public Voltage getDriveVoltage();
+    public Voltage getSteerVoltage();
+    
+    public Current getDriveCurrent();
+    public Current getSteerCurrent();
+    
+    public Temperature getDriveTemperature();
+    public Temperature getSteerTemperature();
+    
+    public SwerveModulePosition getModulePosition();
+    public SwerveModuleState getModuleState();
+    
+    public void setState(SwerveModuleState state);
 
-    public Angle getSteerAbsAngle() {
-        return Radians.zero();
-    }
-
-    public Angle getSteerAngle() {
-        return Radians.zero();
-    }
-
-    public AngularVelocity getSteerVelocity() {
-        return RadiansPerSecond.zero();
-    }
-
-    public AngularAcceleration getSteerAcceleration() {
-        return RadiansPerSecondPerSecond.zero();
-    }
-
-    public Distance getDrivePosition() {
-        return Meters.zero();
-    }
-
-    public LinearVelocity getDriveVelocity() {
-        return MetersPerSecond.zero();
-    }
-
-    public LinearAcceleration getDriveAcceleration() {
-        return MetersPerSecondPerSecond.zero();
-    }
-
-    public Voltage getDriveVoltage() {
-        return Volts.zero();
-    }
-
-    public Voltage getSteerVoltage() {
-        return Volts.zero();
-    }
-
-    public Current getDriveCurrent() {
-        return Amps.zero();
-    }
-
-    public Current getSteerCurrent() {
-        return Amps.zero();
-    }
-
-    public Temperature getDriveTemperature() {
-        return Celsius.zero();
-    }
-
-    public Temperature getSteerTemperature() {
-        return Celsius.zero();
-    }
-
-    public SwerveModulePosition getModulePosition() {
-        return new SwerveModulePosition();
-    }
-
-    public SwerveModuleState getModuleState() {
-        return new SwerveModuleState();
-    }
+    public void resetPosition();
+    public void resetPosition(SwerveModulePosition position);
 }
